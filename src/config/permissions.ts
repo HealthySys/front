@@ -63,12 +63,12 @@ export const modules: ModuleDefinition[] = [
     path: "/app/prontuarios",
     icon: FileText,
   },
-  {
-    key: "notificacoes",
-    label: "Notificações",
-    path: "/app/notificacoes",
-    icon: Bell,
-  }
+  // {
+  //   key: "notificacoes",
+  //   label: "Notificações",
+  //   path: "/app/notificacoes",
+  //   icon: Bell,
+  // }
 ];
 
 const permissionMatrix: Record<Role, ModuleKey[]> = {

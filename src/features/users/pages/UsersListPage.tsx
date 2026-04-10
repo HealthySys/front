@@ -56,7 +56,6 @@ export function UsersListPage() {
       <PageHeader
         eyebrow="ADMINISTRAÇÃO"
         title="Gestão de usuários"
-        description="Cadastre perfis, altere permissões, ative ou inative acessos e mantenha a base administrativa alinhada."
         actions={
           <div className="page-actions">
             <button type="button" className="button secondary" onClick={() => void loadUsers()}>

@@ -7,6 +7,7 @@ import { canAccess, initialRouteForRole } from "./config/permissions";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotificationsPage } from "./features/notifications/pages/NotificationsPage";
+import { CreateNotificationPage } from "./features/notifications/pages/CreateNotificationPage";
 import { PatientsListPage } from "./features/patients/pages/PatientsListPage";
 import { CreatePatientPage } from "./features/patients/pages/CreatePatientPage";
 import { EditPatientPage } from "./features/patients/pages/EditPatientPage";
@@ -159,6 +160,15 @@ export default function App() {
             element={
               <RoleRoute moduleKey="notificacoes">
                 <NotificationsPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="notificacoes/nova"
+            element={
+              <RoleRoute moduleKey="notificacoes">
+                <CreateNotificationPage />
               </RoleRoute>
             }
           />
