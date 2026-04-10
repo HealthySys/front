@@ -157,6 +157,10 @@ export const api = {
     return request<TriageEntry[]>("/api/triage");
   },
 
+  getTriage(id: number) {
+    return request<TriageEntry>(`/api/triage/${id}`);
+  },
+
   listTriageQueue() {
     return request<TriageEntry[]>("/api/triage/queue");
   },

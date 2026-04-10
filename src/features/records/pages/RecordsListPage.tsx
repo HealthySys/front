@@ -64,7 +64,6 @@ export function RecordsListPage() {
       <PageHeader
         eyebrow="REGISTRO CLÍNICO"
         title="Prontuários eletrônicos"
-        description="Consolide diagnósticos, tratamentos, observações e evoluções para sustentar o histórico clínico do paciente."
         actions={
           <div className="page-actions">
             <button type="button" className="button secondary" onClick={() => void loadRecords()}>
