@@ -85,6 +85,20 @@ export function PatientsListPage() {
 
       {error ? <div className="alert error">{error}</div> : null}
 
+      <div className="patients-overview-grid">
+        <div className="overview-card">
+          <span className="overview-label">Pacientes exibidos</span>
+          <strong className="overview-value">{patients.length}</strong>
+        </div>
+
+        <div className="overview-card">
+          <span className="overview-label">Ativos na lista</span>
+          <strong className="overview-value">
+            {patients.filter((patient) => patient.ativo).length}
+          </strong>
+        </div>
+      </div>
+      
       <article className="panel">
         <div className="panel-head">
           <div>
@@ -116,20 +130,6 @@ export function PatientsListPage() {
                 <option value="todos">Todos</option>
               </select>
             </label>
-          </div>
-
-          <div className="patients-overview-grid">
-            <div className="overview-card">
-              <span className="overview-label">Pacientes exibidos</span>
-              <strong className="overview-value">{patients.length}</strong>
-            </div>
-
-            <div className="overview-card">
-              <span className="overview-label">Ativos na lista</span>
-              <strong className="overview-value">
-                {patients.filter((patient) => patient.ativo).length}
-              </strong>
-            </div>
           </div>
         </div>
       </article>

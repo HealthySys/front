@@ -135,94 +135,91 @@ export function TriageListPage() {
         </div>
       </article>
 
-      <section className="content-grid two-columns">
-        <article className="panel">
-          <div className="panel-head">
-            <div>
-              <p className="panel-kicker">FILTROS E CONTEXTO</p>
-              <h2>Fluxo assistencial</h2>
-            </div>
+      <article className="panel">
+        <div className="panel-head">
+          <div>
+            <p className="panel-kicker">FILTROS E CONTEXTO</p>
+          </div>
+        </div>
+
+        <div className="stack-form">
+          <div className="triage-filters-grid">
+            <label className="field">
+              <span>Buscar triagem</span>
+              <input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Paciente, queixa ou profissional"
+              />
+            </label>
+
+            <label className="field">
+              <span>Status</span>
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+              >
+                <option value="todos">Todos os status</option>
+                {triageStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {statusLabel(status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="field">
+              <span>Prioridade</span>
+              <select
+                value={riskFilter}
+                onChange={(event) => setRiskFilter(event.target.value as RiskFilter)}
+              >
+                <option value="todos">Todos os níveis</option>
+                {riskOptions.map((risk) => (
+                  <option key={risk} value={risk}>
+                    {riskLabel(risk)}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
 
-          <div className="stack-form">
-            <div className="triage-filters-grid">
-              <label className="field">
-                <span>Buscar triagem</span>
-                <input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Paciente, queixa ou profissional"
-                />
-              </label>
-
-              <label className="field">
-                <span>Status</span>
-                <select
-                  value={statusFilter}
-                  onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-                >
-                  <option value="todos">Todos os status</option>
-                  {triageStatusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {statusLabel(status)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="field">
-                <span>Prioridade</span>
-                <select
-                  value={riskFilter}
-                  onChange={(event) => setRiskFilter(event.target.value as RiskFilter)}
-                >
-                  <option value="todos">Todos os níveis</option>
-                  {riskOptions.map((risk) => (
-                    <option key={risk} value={risk}>
-                      {riskLabel(risk)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="info-panel">
-              A fila segue o protocolo de Manchester. Os tempos de resposta esperados variam
-              conforme a cor de risco e podem ser acompanhados na própria listagem.
-            </div>
+          <div className="info-panel">
+            A fila segue o protocolo de Manchester. Os tempos de resposta esperados variam
+            conforme a cor de risco e podem ser acompanhados na própria listagem.
           </div>
-        </article>
+        </div>
+      </article>
 
-        <article className="panel">
-          <div className="panel-head">
-            <div>
-              <p className="panel-kicker">FILA PRIORITÁRIA</p>
-              <h2>Casos aguardando</h2>
-            </div>
+      <article className="panel">
+        <div className="panel-head">
+          <div>
+            <p className="panel-kicker">FILA PRIORITÁRIA</p>
+            <h2>Casos aguardando</h2>
           </div>
+        </div>
 
-          {queue.length ? (
-            <div className="list-stack">
-              {queue.map((entry) => (
-                <div key={entry.id} className="list-card">
-                  <div className="list-card-top">
-                    <strong>{entry.patientName}</strong>
-                    <span className={`pill risk ${entry.riskClassification.toLowerCase()}`}>
-                      {riskLabel(entry.riskClassification)}
-                    </span>
-                  </div>
-                  <p>{entry.chiefComplaint || "Sem queixa detalhada."}</p>
-                  <small>{riskSla(entry.riskClassification)}</small>
+        {queue.length ? (
+          <div className="list-stack">
+            {queue.map((entry) => (
+              <div key={entry.id} className="list-card">
+                <div className="list-card-top">
+                  <strong>{entry.patientName}</strong>
+                  <span className={`pill risk ${entry.riskClassification.toLowerCase()}`}>
+                    {riskLabel(entry.riskClassification)}
+                  </span>
                 </div>
-              ))}
-            </div>
-          ) : loading ? (
-            <div className="empty-state">Carregando fila de triagem...</div>
-          ) : (
-            <div className="empty-state">Nenhum paciente aguardando na fila no momento.</div>
-          )}
-        </article>
-      </section>
+                <p>{entry.chiefComplaint || "Sem queixa detalhada."}</p>
+                <small>{riskSla(entry.riskClassification)}</small>
+              </div>
+            ))}
+          </div>
+        ) : loading ? (
+          <div className="empty-state">Carregando fila de triagem...</div>
+        ) : (
+          <div className="empty-state">Nenhum paciente aguardando na fila no momento.</div>
+        )}
+      </article>
 
       <article className="panel">
         <div className="panel-head">

@@ -78,6 +78,18 @@ export function RecordsListPage() {
 
       {error ? <div className="alert error">{error}</div> : null}
 
+      <div className="patients-overview-grid">
+        <div className="overview-card">
+          <span className="overview-label">Prontuários exibidos</span>
+          <strong className="overview-value">{filteredRecords.length}</strong>
+        </div>
+
+        <div className="overview-card">
+          <span className="overview-label">Total cadastrado</span>
+          <strong className="overview-value">{records.length}</strong>
+        </div>
+      </div>
+
       <article className="panel">
         <div className="panel-head">
           <div>
@@ -103,18 +115,6 @@ export function RecordsListPage() {
               placeholder="Nome do médico responsável"
             />
           </label>
-        </div>
-
-        <div className="patients-overview-grid">
-          <div className="overview-card">
-            <span className="overview-label">Prontuários exibidos</span>
-            <strong className="overview-value">{filteredRecords.length}</strong>
-          </div>
-
-          <div className="overview-card">
-            <span className="overview-label">Total cadastrado</span>
-            <strong className="overview-value">{records.length}</strong>
-          </div>
         </div>
       </article>
 
