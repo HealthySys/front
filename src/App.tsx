@@ -7,7 +7,9 @@ import { canAccess, initialRouteForRole } from "./config/permissions";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { NotificationsPage } from "./features/notifications/pages/NotificationsPage";
-import { PatientsPage } from "./features/patients/pages/PatientsPage";
+import { PatientsListPage } from "./features/patients/pages/PatientsListPage";
+import { CreatePatientPage } from "./features/patients/pages/CreatePatientPage";
+import { EditPatientPage } from "./features/patients/pages/EditPatientPage";
 import { TriagePage } from "./features/triage/pages/TriagePage";
 import { RecordsPage } from "./features/records/pages/RecordsPage";
 import { UsersListPage } from "./features/users/pages/UsersListPage";
@@ -48,7 +50,6 @@ export default function App() {
               </RoleRoute>
             }
           />
-
           <Route
             path="usuarios/novo"
             element={
@@ -57,7 +58,6 @@ export default function App() {
               </RoleRoute>
             }
           />
-
           <Route
             path="usuarios/:id/editar"
             element={
@@ -70,7 +70,23 @@ export default function App() {
             path="pacientes"
             element={
               <RoleRoute moduleKey="pacientes">
-                <PatientsPage />
+                <PatientsListPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="pacientes/novo"
+            element={
+              <RoleRoute moduleKey="pacientes">
+                <CreatePatientPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="pacientes/:id/editar"
+            element={
+              <RoleRoute moduleKey="pacientes">
+                <EditPatientPage />
               </RoleRoute>
             }
           />

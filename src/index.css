@@ -448,6 +448,19 @@ textarea {
   text-align: center;
 }
 
+.filters-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.9fr);
+  gap: 1rem;
+  align-items: end;
+}
+
+.patients-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
 .list-stack,
 .detail-stack,
 .timeline,
@@ -529,7 +542,8 @@ textarea {
   border: 1px solid var(--line);
   background: var(--panel);
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.45rem;
 }
 
@@ -772,6 +786,11 @@ textarea {
   .login-card,
   .login-hero {
     padding: 1rem;
+  }
+
+  .filters-row,
+  .patients-overview-grid {
+    grid-template-columns: 1fr;
   }
 
   .form-grid,
