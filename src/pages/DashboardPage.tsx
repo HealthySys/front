@@ -142,13 +142,13 @@ export function DashboardPage() {
             <small>Registros clínicos disponíveis para consulta e evolução.</small>
           </article>
         ) : null}
-        {canAccess(user?.role, "notificacoes") ? (
+        {/* {canAccess(user?.role, "notificacoes") ? (
           <article className="stat-card">
             <span>Notificações</span>
             <strong>{snapshot.notifications}</strong>
             <small>Eventos recentes e comunicados do ambiente.</small>
           </article>
-        ) : null}
+        ) : null} */}
       </section>
 
       <section className="content-grid two-columns">

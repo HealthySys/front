@@ -8,8 +8,10 @@ export function ProtectedRoute() {
     return (
       <div className="fullscreen-state">
         <div className="loader-card">
-          <span className="loader-dot" />
+          <div className="flex">
+            <span className="loader-dot" />
           <strong>Carregando o ambiente HealthSys...</strong>
+          </div>
           <p>Verificando sua sessão e preparando os módulos autorizados.</p>
         </div>
       </div>
