@@ -10,8 +10,13 @@ import { NotificationsPage } from "./features/notifications/pages/NotificationsP
 import { PatientsListPage } from "./features/patients/pages/PatientsListPage";
 import { CreatePatientPage } from "./features/patients/pages/CreatePatientPage";
 import { EditPatientPage } from "./features/patients/pages/EditPatientPage";
-import { TriagePage } from "./features/triage/pages/TriagePage";
-import { RecordsPage } from "./features/records/pages/RecordsPage";
+import { CreateTriagePage } from "./features/triage/pages/CreateTriagePage";
+import { EditTriagePage } from "./features/triage/pages/EditTriagePage";
+import { TriageListPage } from "./features/triage/pages/TriageListPage";
+import { RecordsListPage } from "./features/records/pages/RecordsListPage";
+import { CreateRecordPage } from "./features/records/pages/CreateRecordPage";
+import { EditRecordPage } from "./features/records/pages/EditRecordPage";
+import { RecordDetailsPage } from "./features/records/pages/RecordDetailsPage";
 import { UsersListPage } from "./features/users/pages/UsersListPage";
 import { CreateUserPage } from "./features/users/pages/CreateUserPage";
 import { EditUserPage } from "./features/users/pages/EditUserPage";
@@ -94,7 +99,23 @@ export default function App() {
             path="triagem"
             element={
               <RoleRoute moduleKey="triagem">
-                <TriagePage />
+                <TriageListPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="triagem/nova"
+            element={
+              <RoleRoute moduleKey="triagem">
+                <CreateTriagePage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="triagem/:id/editar"
+            element={
+              <RoleRoute moduleKey="triagem">
+                <EditTriagePage />
               </RoleRoute>
             }
           />
@@ -102,7 +123,34 @@ export default function App() {
             path="prontuarios"
             element={
               <RoleRoute moduleKey="prontuarios">
-                <RecordsPage />
+                <RecordsListPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="prontuarios/novo"
+            element={
+              <RoleRoute moduleKey="prontuarios">
+                <CreateRecordPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="prontuarios/:id"
+            element={
+              <RoleRoute moduleKey="prontuarios">
+                <RecordDetailsPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="prontuarios/:id/editar"
+            element={
+              <RoleRoute moduleKey="prontuarios">
+                <EditRecordPage />
               </RoleRoute>
             }
           />
