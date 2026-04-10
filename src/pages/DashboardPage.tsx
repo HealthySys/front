@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
-import { PageHeader } from "../components/PageHeader";
+import { PageHeader } from "../components/layout/PageHeader";
 import { canAccess, modules } from "../config/permissions";
 import { api } from "../services/api";
 import type { Notification, TriageEntry } from "../types";

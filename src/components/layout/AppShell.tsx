@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { useAuth } from "../auth/AuthProvider";
-import { canAccess, modules } from "../config/permissions";
-import { roleLabel } from "../utils/formatters";
+import { useAuth } from "../../auth/AuthProvider";
+import { canAccess, modules } from "../../config/permissions";
+import { roleLabel } from "../../utils/formatters";
 
 export function AppShell() {
   const { user, logout } = useAuth();
@@ -47,10 +47,9 @@ export function AppShell() {
           </div>
           <div className="topbar-actions">
             <div className="user-chip">
-              <span>{user?.username}</span>
               <small>{roleLabel(user?.role)}</small>
             </div>
-            <button type="button" className="button ghost" onClick={logout}>
+            <button type="button" className="quit-button" onClick={logout}>
               Sair
             </button>
           </div>

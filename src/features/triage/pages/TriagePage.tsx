@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
-import { PageHeader } from "../components/PageHeader";
-import { api } from "../services/api";
-import type { Patient, TriageEntry, TriagePayload } from "../types";
+import { PageHeader } from "../../../components/layout/PageHeader";
+import { api } from "../../../services/api";
+import type { Patient, TriageEntry, TriagePayload } from "../../../types";
 import {
   normalizeError,
   riskLabel,
@@ -9,7 +9,7 @@ import {
   riskSla,
   statusLabel,
   triageStatusOptions
-} from "../utils/formatters";
+} from "../../../utils/formatters";
 
 type TriageFormState = {
   patientId: string;

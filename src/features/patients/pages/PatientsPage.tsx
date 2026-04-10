@@ -1,14 +1,14 @@
 import { FormEvent, useDeferredValue, useEffect, useState } from "react";
-import { PageHeader } from "../components/PageHeader";
-import { api } from "../services/api";
-import type { Patient, PatientPayload } from "../types";
+import { PageHeader } from "../../../components/layout/PageHeader";
+import { api } from "../../../services/api";
+import type { Patient, PatientPayload } from "../../../types";
 import {
   bloodTypeOptions,
   formatDate,
   normalizeError,
   sexoLabel,
   sexoOptions
-} from "../utils/formatters";
+} from "../../../utils/formatters";
 
 const initialForm: PatientPayload = {
   nome: "",

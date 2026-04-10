@@ -140,6 +140,22 @@ textarea {
   font-size: 0.92rem;
 }
 
+.quit-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.35rem;
+  background: linear-gradient(135deg, var(--brand) 0%, #4aa4a0 100%);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+  box-shadow: 0 14px 24px rgba(46, 123, 119, 0.18);
+}
+
+.quit-button:hover {
+  transform: translateY(-1px);
+}
+
 .mini-label,
 .panel-kicker {
   margin: 0 0 0.5rem;
@@ -243,15 +259,27 @@ textarea {
 .list-card-top,
 .topbar,
 .brand-card,
-.info-row,
 .page-actions,
-.form-actions,
 .table-actions,
 .topbar-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.info-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .panel-head h2,
@@ -288,11 +316,16 @@ textarea {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.field,
-.switch-field {
+.field {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.switch-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .field span,
@@ -302,11 +335,6 @@ textarea {
 
 .field-span-2 {
   grid-column: span 2;
-}
-
-.switch-field {
-  justify-content: center;
-  padding-top: 1.6rem;
 }
 
 .switch-field input {
@@ -423,11 +451,16 @@ textarea {
 .list-stack,
 .detail-stack,
 .timeline,
-.info-list,
 .stack-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.info-list {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 .timeline-item {
@@ -482,6 +515,42 @@ textarea {
   background: linear-gradient(135deg, var(--brand), #63b4ae);
   color: #fff;
   font-weight: 800;
+}
+
+.users-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.overview-card {
+  padding: 1.15rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.overview-label {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.overview-value {
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  line-height: 1;
+  color: var(--text);
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
+
+.overview-helper {
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 .brand-copy strong {
@@ -688,6 +757,10 @@ textarea {
   .feature-grid {
     grid-template-columns: 1fr;
   }
+
+  .users-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {
@@ -714,13 +787,21 @@ textarea {
   .topbar,
   .panel-head,
   .table-actions,
-  .form-actions,
   .topbar-actions {
     flex-direction: column;
     align-items: stretch;
   }
+  
+  .form-actions {
+    flex-direction: row; 
+    justify-content: flex-end;
+  }
 
   .data-table {
     min-width: 36rem;
+  }
+
+  .users-overview-grid {
+    grid-template-columns: 1fr;
   }
 }

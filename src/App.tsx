@@ -1,16 +1,18 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./auth/AuthProvider";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
-import { AppShell } from "./components/AppShell";
+import { AppShell } from "./components/layout/AppShell";
 import type { ModuleKey } from "./config/permissions";
 import { canAccess, initialRouteForRole } from "./config/permissions";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
-import { NotificationsPage } from "./pages/NotificationsPage";
-import { PatientsPage } from "./pages/PatientsPage";
-import { RecordsPage } from "./pages/RecordsPage";
-import { TriagePage } from "./pages/TriagePage";
-import { UsersPage } from "./pages/UsersPage";
+import { NotificationsPage } from "./features/notifications/pages/NotificationsPage";
+import { PatientsPage } from "./features/patients/pages/PatientsPage";
+import { TriagePage } from "./features/triage/pages/TriagePage";
+import { RecordsPage } from "./features/records/pages/RecordsPage";
+import { UsersListPage } from "./features/users/pages/UsersListPage";
+import { CreateUserPage } from "./features/users/pages/CreateUserPage";
+import { EditUserPage } from "./features/users/pages/EditUserPage";
 
 function RoleRoute({
   moduleKey,
@@ -42,7 +44,25 @@ export default function App() {
             path="usuarios"
             element={
               <RoleRoute moduleKey="usuarios">
-                <UsersPage />
+                <UsersListPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="usuarios/novo"
+            element={
+              <RoleRoute moduleKey="usuarios">
+                <CreateUserPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="usuarios/:id/editar"
+            element={
+              <RoleRoute moduleKey="usuarios">
+                <EditUserPage />
               </RoleRoute>
             }
           />

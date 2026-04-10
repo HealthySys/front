@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useState } from "react";
-import { PageHeader } from "../components/PageHeader";
-import { api } from "../services/api";
-import type { MedicalRecord, MedicalRecordPayload, Patient, RecordEntry } from "../types";
-import { formatDateTime, normalizeError, recordEntryTypeOptions } from "../utils/formatters";
+import { PageHeader } from "../../../components/layout/PageHeader";
+import { api } from "../../../services/api";
+import type { MedicalRecord, MedicalRecordPayload, Patient, RecordEntry } from "../../../types";
+import { formatDateTime, normalizeError, recordEntryTypeOptions } from "../../../utils/formatters";
 
 const initialRecordForm: MedicalRecordPayload = {
   patientId: 0,

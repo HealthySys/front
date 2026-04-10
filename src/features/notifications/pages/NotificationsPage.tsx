@@ -1,16 +1,16 @@
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { FormEvent, useEffect, useState } from "react";
-import { PageHeader } from "../components/PageHeader";
-import { api } from "../services/api";
-import type { Notification, NotificationPayload } from "../types";
+import { PageHeader } from "../../../components/layout/PageHeader";
+import { api } from "../../../services/api";
+import type { Notification, NotificationPayload } from "../../../types";
 import {
   formatDateTime,
   normalizeError,
   notificationSeverityOptions,
   notificationTypeOptions,
   severityLabel
-} from "../utils/formatters";
+} from "../../../utils/formatters";
 
 const initialForm: NotificationPayload = {
   type: "INFO",
