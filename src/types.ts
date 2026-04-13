@@ -46,6 +46,17 @@ export interface UpdateUserPayload {
 
 export type Sexo = "MASCULINO" | "FEMININO" | "OUTRO";
 
+export interface VaccinePayload {
+  id?: number;
+  nomeVacina: string;
+  dataAplicacao: string;
+}
+
+export interface AllergyPayload {
+  id?: number;
+  nomeAlergia: string;
+}
+
 export interface Patient {
   id: number;
   nome: string;
@@ -56,8 +67,8 @@ export interface Patient {
   sexo: Sexo;
   endereco: string;
   tipoSanguineo: string;
-  alergias: string;
-  historicoVacinas: string;
+  alergias: AllergyPayload[];
+  vacinas: VaccinePayload[];
   ativo: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -72,8 +83,8 @@ export interface PatientPayload {
   sexo: Sexo;
   endereco: string;
   tipoSanguineo: string;
-  alergias: string;
-  historicoVacinas: string;
+  alergias: AllergyPayload[];
+  vacinas: VaccinePayload[];
   ativo: boolean;
 }
 

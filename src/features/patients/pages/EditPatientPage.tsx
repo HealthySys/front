@@ -15,8 +15,8 @@ const initialForm: PatientPayload = {
   sexo: "FEMININO",
   endereco: "",
   tipoSanguineo: "O+",
-  alergias: "",
-  historicoVacinas: "",
+  alergias: [],
+  vacinas: [],
   ativo: true
 };
 
@@ -52,8 +52,8 @@ export function EditPatientPage() {
           sexo: patient.sexo,
           endereco: patient.endereco,
           tipoSanguineo: patient.tipoSanguineo,
-          alergias: patient.alergias,
-          historicoVacinas: patient.historicoVacinas,
+          alergias: patient.alergias || [],
+          vacinas: patient.vacinas || [],
           ativo: patient.ativo
         });
       } catch (loadError) {

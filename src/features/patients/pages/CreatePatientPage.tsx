@@ -15,8 +15,8 @@ const initialForm: PatientPayload = {
   sexo: "FEMININO",
   endereco: "",
   tipoSanguineo: "O+",
-  alergias: "",
-  historicoVacinas: "",
+  alergias: [],
+  vacinas: [],
   ativo: true
 };
 

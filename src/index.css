@@ -347,6 +347,97 @@ textarea {
   grid-column: span 2;
 }
 
+.form-section {
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.form-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.form-section-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.form-section-desc {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.form-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.add-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.field-empty {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-style: italic;
+  margin: 0;
+  padding: 0.75rem 0;
+  text-align: center;
+}
+
+.inline-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.inline-row-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.inline-row input {
+  flex: 1;
+}
+
+.inline-row input[type="date"] {
+  flex: 0 0 180px;
+}
+
+.button.danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger-soft);
+  box-shadow: none;
+}
+
+.button.danger:hover {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
 .switch-field input {
   width: auto;
   margin: 0;
