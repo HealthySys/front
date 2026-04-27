@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { initialRouteForRole } from "../config/permissions";
@@ -15,11 +16,15 @@ export function LoginPage() {
   const [bootstrapRequired, setBootstrapRequired] = useState(false);
   const [bootstrapLoading, setBootstrapLoading] = useState(true);
   const [adminUsername, setAdminUsername] = useState("");
+  const [adminNome, setAdminNome] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [adminPasswordConfirmation, setAdminPasswordConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [bootstrapSubmitting, setBootstrapSubmitting] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [adminPasswordVisible, setAdminPasswordVisible] = useState(false);
+  const [adminPasswordConfirmationVisible, setAdminPasswordConfirmationVisible] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -80,6 +85,7 @@ export function LoginPage() {
     try {
       await api.register({
         username: adminUsername,
+        nome: adminNome,
         email: adminEmail,
         password: adminPassword,
         role: "ADMIN"
@@ -142,27 +148,59 @@ export function LoginPage() {
             </label>
 
             <label className="field">
-              <span>Senha</span>
+              <span>Nome completo</span>
               <input
-                value={adminPassword}
-                onChange={(event) => setAdminPassword(event.target.value)}
-                type="password"
-                placeholder="Senha com letra maiúscula, minúscula, número e símbolo"
-                autoComplete="new-password"
+                value={adminNome}
+                onChange={(event) => setAdminNome(event.target.value)}
+                placeholder="Administrador HealthSys"
                 required
               />
             </label>
 
             <label className="field">
+              <span>Senha</span>
+              <div className="password-field">
+                <input
+                  value={adminPassword}
+                  onChange={(event) => setAdminPassword(event.target.value)}
+                  type={adminPasswordVisible ? "text" : "password"}
+                  placeholder="Senha com letra maiúscula, minúscula, número e símbolo"
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setAdminPasswordVisible((current) => !current)}
+                  aria-label={adminPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
+                  aria-pressed={adminPasswordVisible}
+                >
+                  {adminPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </label>
+
+            <label className="field">
               <span>Confirmar senha</span>
-              <input
-                value={adminPasswordConfirmation}
-                onChange={(event) => setAdminPasswordConfirmation(event.target.value)}
-                type="password"
-                placeholder="Repita a senha"
-                autoComplete="new-password"
-                required
-              />
+              <div className="password-field">
+                <input
+                  value={adminPasswordConfirmation}
+                  onChange={(event) => setAdminPasswordConfirmation(event.target.value)}
+                  type={adminPasswordConfirmationVisible ? "text" : "password"}
+                  placeholder="Repita a senha"
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setAdminPasswordConfirmationVisible((current) => !current)}
+                  aria-label={adminPasswordConfirmationVisible ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
+                  aria-pressed={adminPasswordConfirmationVisible}
+                >
+                  {adminPasswordConfirmationVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </label>
 
             <button type="submit" className="button" disabled={bootstrapSubmitting || isLoading}>
@@ -184,14 +222,25 @@ export function LoginPage() {
 
             <label className="field">
               <span>Senha</span>
-              <input
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                type="password"
-                placeholder="Sua senha"
-                autoComplete="current-password"
-                required
-              />
+              <div className="password-field">
+                <input
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  type={passwordVisible ? "text" : "password"}
+                  placeholder="Sua senha"
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setPasswordVisible((current) => !current)}
+                  aria-label={passwordVisible ? "Ocultar senha" : "Mostrar senha"}
+                  aria-pressed={passwordVisible}
+                >
+                  {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </label>
 
             <button type="submit" className="button" disabled={submitting || isLoading}>

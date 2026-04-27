@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { AuthResponse, LoginPayload, User } from "../types";
 import { api, SESSION_STORAGE_KEY, TOKEN_STORAGE_KEY } from "../services/api";
+import { healthSysWebSocket } from "../services/websocket";
 
 interface AuthContextValue {
   token: string | null;
@@ -8,7 +9,7 @@ interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   login: (payload: LoginPayload) => Promise<User>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -63,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (payload: LoginPayload) => {
     const nextSession = await api.login(payload);
     persistSession(nextSession.token, nextSession);
+    healthSysWebSocket.connect();
 
     const profile = await api.getCurrentUser();
 
@@ -75,7 +77,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return profile;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (session?.refreshToken) {
+      try {
+        await api.logout(session.refreshToken);
+      } catch {
+        // O logout local ainda deve ocorrer mesmo se o backend nao responder.
+      }
+    }
+    await healthSysWebSocket.disconnect();
     clearSession();
     setIsLoading(false);
   };
@@ -102,6 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
+        healthSysWebSocket.connect();
         setUser(profile);
       })
       .catch(() => {
@@ -109,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
+        void healthSysWebSocket.disconnect();
         clearSession();
       })
       .finally(() => {
@@ -121,6 +133,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       active = false;
     };
   }, [token]);
+
+  useEffect(() => {
+    if (!session?.refreshToken || !session.expiresIn) {
+      return undefined;
+    }
+
+    const refreshDelayMs = Math.max((session.expiresIn - 300) * 1000, 1000);
+    const timer = window.setTimeout(() => {
+      void api.refreshToken(session.refreshToken)
+        .then((nextSession) => {
+          persistSession(nextSession.token, nextSession);
+        })
+        .catch(() => {
+          clearSession();
+        });
+    }, refreshDelayMs);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [session]);
 
   return (
     <AuthContext.Provider

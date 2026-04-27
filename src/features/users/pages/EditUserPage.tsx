@@ -8,10 +8,12 @@ import { UserForm, type UserFormState } from "../components/UserForm";
 
 const initialForm: UserFormState = {
   username: "",
+  nome: "",
   email: "",
   password: "",
   role: "RECEPCIONISTA",
-  active: true
+  active: true,
+  assinaturaDigital: ""
 };
 
 export function EditUserPage() {
@@ -39,10 +41,12 @@ export function EditUserPage() {
 
         setForm({
           username: user.username,
+          nome: user.nome,
           email: user.email,
           password: "",
           role: user.role,
-          active: user.active
+          active: user.active,
+          assinaturaDigital: user.assinaturaDigital ?? ""
         });
       } catch (loadError) {
         setError(normalizeError(loadError));
@@ -63,9 +67,11 @@ export function EditUserPage() {
     try {
       const payload: UpdateUserPayload = {
         username: form.username,
+        nome: form.nome,
         email: form.email,
         role: form.role,
         active: form.active,
+        assinaturaDigital: form.assinaturaDigital || undefined,
         ...(form.password ? { password: form.password } : {})
       };
 

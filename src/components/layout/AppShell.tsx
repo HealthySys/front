@@ -74,7 +74,7 @@ export function AppShell() {
             <div className="user-chip">
               <small>{roleLabel(user?.role)}</small>
             </div>
-            <button type="button" className="quit-button" onClick={logout}>
+            <button type="button" className="quit-button" onClick={() => void logout()}>
               Sair
             </button>
           </div>

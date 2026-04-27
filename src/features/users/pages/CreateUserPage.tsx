@@ -8,10 +8,12 @@ import { UserForm, type UserFormState } from "../components/UserForm";
 
 const initialForm: UserFormState = {
   username: "",
+  nome: "",
   email: "",
   password: "",
   role: "RECEPCIONISTA",
-  active: true
+  active: true,
+  assinaturaDigital: ""
 };
 
 export function CreateUserPage() {
@@ -30,9 +32,11 @@ export function CreateUserPage() {
     try {
       const payload: CreateUserPayload = {
         username: form.username,
+        nome: form.nome,
         email: form.email,
         password: form.password,
-        role: form.role
+        role: form.role,
+        assinaturaDigital: form.assinaturaDigital || undefined
       };
 
       const created = await api.createUser(payload);

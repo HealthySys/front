@@ -2,10 +2,12 @@ import type { User } from "../../../types";
 
 export type UserFormState = {
   username: string;
+  nome: string;
   email: string;
   password: string;
   role: User["role"];
   active: boolean;
+  assinaturaDigital: string;
 };
 
 type UserFormProps = {
@@ -42,6 +44,16 @@ export function UserForm({
       </label>
 
       <label className="field">
+        <span>Nome completo</span>
+        <input
+          value={form.nome}
+          onChange={(event) => setForm((current) => ({ ...current, nome: event.target.value }))}
+          placeholder="Nome completo"
+          required
+        />
+      </label>
+
+      <label className="field">
         <span>E-mail</span>
         <input
           value={form.email}
@@ -59,7 +71,17 @@ export function UserForm({
           onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
           type="password"
           placeholder="Senha com 8+ caracteres, maiúsculas, números e símbolo"
+          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}$"
           required={!isEditing}
+        />
+      </label>
+
+      <label className="field">
+        <span>Assinatura digital</span>
+        <input
+          value={form.assinaturaDigital}
+          onChange={(event) => setForm((current) => ({ ...current, assinaturaDigital: event.target.value }))}
+          placeholder="Obrigatória para prescrições controladas"
         />
       </label>
 

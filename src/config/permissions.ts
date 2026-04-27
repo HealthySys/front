@@ -15,7 +15,8 @@ export type ModuleKey =
   | "pacientes"
   | "triagem"
   | "prontuarios"
-  | "notificacoes";
+  | "notificacoes"
+  | "meu-prontuario";
 
 export interface ModuleDefinition {
   key: ModuleKey;
@@ -63,12 +64,18 @@ export const modules: ModuleDefinition[] = [
     path: "/app/prontuarios",
     icon: FileText,
   },
-  // {
-  //   key: "notificacoes",
-  //   label: "Notificações",
-  //   path: "/app/notificacoes",
-  //   icon: Bell,
-  // }
+  {
+    key: "notificacoes",
+    label: "Notificações",
+    path: "/app/notificacoes",
+    icon: Bell,
+  },
+  {
+    key: "meu-prontuario",
+    label: "Meu prontuário",
+    path: "/app/meu-prontuario",
+    icon: FileText,
+  }
 ];
 
 const permissionMatrix: Record<Role, ModuleKey[]> = {
@@ -76,7 +83,7 @@ const permissionMatrix: Record<Role, ModuleKey[]> = {
   MEDICO: ["dashboard", "pacientes", "triagem", "prontuarios", "notificacoes"],
   ENFERMEIRO: ["dashboard", "pacientes", "triagem", "prontuarios", "notificacoes"],
   RECEPCIONISTA: ["dashboard", "pacientes"],
-  PACIENTE: ["dashboard"]
+  PACIENTE: ["meu-prontuario"]
 };
 
 export function canAccess(role: Role | undefined, moduleKey: ModuleKey) {
@@ -90,6 +97,10 @@ export function canAccess(role: Role | undefined, moduleKey: ModuleKey) {
 export function initialRouteForRole(role: Role | undefined) {
   if (!role) {
     return "/login";
+  }
+
+  if (role === "PACIENTE") {
+    return "/app/meu-prontuario";
   }
 
   const firstAvailable = modules.find((module) => canAccess(role, module.key));

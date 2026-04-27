@@ -18,6 +18,7 @@ import { RecordsListPage } from "./features/records/pages/RecordsListPage";
 import { CreateRecordPage } from "./features/records/pages/CreateRecordPage";
 import { EditRecordPage } from "./features/records/pages/EditRecordPage";
 import { RecordDetailsPage } from "./features/records/pages/RecordDetailsPage";
+import { MyRecordPage } from "./features/records/pages/MyRecordPage";
 import { UsersListPage } from "./features/users/pages/UsersListPage";
 import { CreateUserPage } from "./features/users/pages/CreateUserPage";
 import { EditUserPage } from "./features/users/pages/EditUserPage";
@@ -47,7 +48,12 @@ export default function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/app" element={<AppShell />}>
-          <Route index element={<DashboardPage />} />
+          <Route
+            index
+            element={
+              user?.role === "PACIENTE" ? <Navigate to="/app/meu-prontuario" replace /> : <DashboardPage />
+            }
+          />
           <Route
             path="usuarios"
             element={
@@ -169,6 +175,14 @@ export default function App() {
             element={
               <RoleRoute moduleKey="notificacoes">
                 <CreateNotificationPage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="meu-prontuario"
+            element={
+              <RoleRoute moduleKey="meu-prontuario">
+                <MyRecordPage />
               </RoleRoute>
             }
           />

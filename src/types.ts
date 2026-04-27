@@ -9,7 +9,11 @@ export interface AuthResponse {
   token: string;
   tokenType: string;
   expiresIn: number;
+  refreshToken: string;
+  refreshExpiresIn: number;
+  userId: number;
   username: string;
+  nome: string;
   email: string;
   role: Role;
 }
@@ -22,8 +26,10 @@ export interface BootstrapStatus {
 export interface User {
   id: number;
   username: string;
+  nome: string;
   email: string;
   role: Role;
+  assinaturaDigital?: string;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -31,30 +37,39 @@ export interface User {
 
 export interface CreateUserPayload {
   username: string;
+  nome: string;
   email: string;
   password: string;
   role: Role;
+  assinaturaDigital?: string;
 }
 
 export interface UpdateUserPayload {
   username: string;
+  nome: string;
   email: string;
   password?: string;
   role: Role;
   active: boolean;
+  assinaturaDigital?: string;
 }
 
 export type Sexo = "MASCULINO" | "FEMININO" | "OUTRO";
+
+export type Severidade = "LEVE" | "MODERADA" | "GRAVE";
 
 export interface VaccinePayload {
   id?: number;
   nomeVacina: string;
   dataAplicacao: string;
+  lote?: string;
+  profissionalResp?: string;
 }
 
 export interface AllergyPayload {
   id?: number;
   nomeAlergia: string;
+  severidade: Severidade;
 }
 
 export interface Patient {
@@ -72,6 +87,10 @@ export interface Patient {
   ativo: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface WebSocketSubscription {
+  unsubscribe: () => void;
 }
 
 export interface PatientPayload {
@@ -99,6 +118,7 @@ export type TriageStatus =
 
 export interface TriageEntry {
   id: number;
+  correlationId?: string;
   patientId: number;
   patientName: string;
   riskClassification: RiskClassification;
@@ -131,6 +151,7 @@ export interface RecordEntry {
   doctorName: string;
   entryDate?: string;
   origin?: string;
+  correlationId?: string;
 }
 
 export interface MedicalRecord {
@@ -165,6 +186,7 @@ export interface Notification {
   severity: string;
   patientId?: number;
   patientName?: string;
+  correlationId?: string;
   timestamp?: string;
 }
 

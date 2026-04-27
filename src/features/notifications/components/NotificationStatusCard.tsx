@@ -21,7 +21,7 @@ export function NotificationStatusCard({
 
       <div className="info-row">
         <strong>Origem</strong>
-        <span>Gateway `/ws` com broker STOMP do serviço de notificações.</span>
+        <span>Gateway `/ws/notifications` com broker STOMP do serviço de notificações.</span>
       </div>
     </div>
   );

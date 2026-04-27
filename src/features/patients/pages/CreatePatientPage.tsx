@@ -14,7 +14,7 @@ const initialForm: PatientPayload = {
   telefone: "",
   sexo: "FEMININO",
   endereco: "",
-  tipoSanguineo: "O+",
+  tipoSanguineo: "",
   alergias: [],
   vacinas: [],
   ativo: true
@@ -47,9 +47,9 @@ export function CreatePatientPage() {
   return (
     <div className="page-stack">
       <PageHeader
-        eyebrow="CADASTRO CLÍNICO"
+        eyebrow="CADASTRO ADMINISTRATIVO"
         title="Cadastrar paciente"
-        description="Crie um novo cadastro com informações administrativas e clínicas iniciais."
+        description="Crie o cadastro inicial do paciente com dados administrativos. As informações clínicas ficam para a etapa assistencial."
       />
 
       {feedback ? <div className="alert success">{feedback}</div> : null}
@@ -60,6 +60,7 @@ export function CreatePatientPage() {
           form={form}
           setForm={setForm}
           submitting={submitting}
+          showClinicalSection={false}
           onSubmit={handleSubmit}
           onCancel={() => navigate("/app/pacientes")}
         />

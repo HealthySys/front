@@ -95,6 +95,41 @@ textarea:focus {
   box-shadow: 0 0 0 4px rgba(46, 123, 119, 0.12);
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 3.75rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.password-toggle:hover {
+  color: var(--brand-strong);
+  background: rgba(46, 123, 119, 0.08);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid rgba(46, 123, 119, 0.35);
+  outline-offset: 2px;
+}
+
 textarea {
   resize: vertical;
   min-height: 7rem;

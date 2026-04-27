@@ -69,6 +69,21 @@ export const api = {
     });
   },
 
+  refreshToken(refreshToken: string) {
+    return request<AuthResponse>("/api/auth/refresh", {
+      method: "POST",
+      body: JSON.stringify({ refreshToken }),
+      skipAuth: true
+    });
+  },
+
+  logout(refreshToken: string) {
+    return request<void>("/api/auth/logout", {
+      method: "POST",
+      body: JSON.stringify({ refreshToken })
+    });
+  },
+
   register(payload: CreateUserPayload) {
     return request<User>("/api/auth/register", {
       method: "POST",
@@ -123,8 +138,16 @@ export const api = {
     return request<Patient[]>(`/api/patients${suffix}`);
   },
 
+  getCurrentPatient() {
+    return request<Patient>("/api/patients/me");
+  },
+
   searchPatients(name: string) {
     return request<Patient[]>(`/api/patients/search?nome=${encodeURIComponent(name)}`);
+  },
+
+  searchPatientByCpf(cpf: string) {
+    return request<Patient>(`/api/patients/cpf/${encodeURIComponent(cpf)}`);
   },
 
   createPatient(payload: PatientPayload) {
@@ -191,8 +214,13 @@ export const api = {
     });
   },
 
-  listRecords() {
-    return request<MedicalRecord[]>("/api/records");
+  listRecords(patientId?: number | string) {
+    const suffix = patientId !== undefined ? `?patientId=${encodeURIComponent(String(patientId))}` : "";
+    return request<MedicalRecord[]>(`/api/records${suffix}`);
+  },
+
+  getMyRecord(patientId: number | string) {
+    return request<MedicalRecord[]>(`/api/records?patientId=${encodeURIComponent(String(patientId))}`);
   },
 
   createRecord(payload: MedicalRecordPayload) {

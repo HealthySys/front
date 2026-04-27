@@ -1,12 +1,10 @@
-import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../../components/layout/PageHeader";
 import { api } from "../../../services/api";
+import { healthSysWebSocket } from "../../../services/websocket";
 import type { Notification } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
-import { NotificationStatusCard } from "../components/NotificationStatusCard";
 import { NotificationsFeed } from "../components/NotificationsFeed";
 
 export function NotificationsPage() {
@@ -41,33 +39,17 @@ export function NotificationsPage() {
   }, []);
 
   useEffect(() => {
-    const client = new Client({
-      reconnectDelay: 5000,
-      webSocketFactory: () => new SockJS("/ws"),
-      onConnect: () => {
-        setConnectionStatus("Conectado em tempo real");
-
-        client.subscribe("/topic/notifications", (message) => {
-          try {
-            const notification = JSON.parse(message.body) as Notification;
-            mergeNotification(notification);
-          } catch {
-            setConnectionStatus("Conectado com alerta de leitura");
-          }
-        });
-      },
-      onStompError: () => {
-        setConnectionStatus("Falha no broker");
-      },
-      onWebSocketClose: () => {
-        setConnectionStatus("Conexão encerrada");
-      }
+    healthSysWebSocket.connect();
+    const notificationSubscription = healthSysWebSocket.onNotification((notification) => {
+      mergeNotification(notification);
+    });
+    const statusSubscription = healthSysWebSocket.onStatusChange((status) => {
+      setConnectionStatus(status);
     });
 
-    client.activate();
-
     return () => {
-      void client.deactivate();
+      notificationSubscription.unsubscribe();
+      statusSubscription.unsubscribe();
     };
   }, []);
 
@@ -121,6 +103,7 @@ export function NotificationsPage() {
           <div>
             <p className="panel-kicker">HISTÓRICO OPERACIONAL</p>
             <h2>Feed de notificações</h2>
+            <small>{connectionStatus}</small>
           </div>
         </div>
 

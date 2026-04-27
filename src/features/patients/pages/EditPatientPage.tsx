@@ -14,7 +14,7 @@ const initialForm: PatientPayload = {
   telefone: "",
   sexo: "FEMININO",
   endereco: "",
-  tipoSanguineo: "O+",
+  tipoSanguineo: "",
   alergias: [],
   vacinas: [],
   ativo: true
