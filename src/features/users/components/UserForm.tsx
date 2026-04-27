@@ -71,7 +71,7 @@ export function UserForm({
           onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
           type="password"
           placeholder="Senha com 8+ caracteres, maiúsculas, números e símbolo"
-          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}$"
+          pattern={/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.source}
           required={!isEditing}
         />
       </label>
