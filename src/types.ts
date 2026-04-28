@@ -125,7 +125,7 @@ export interface TriageEntry {
   chiefComplaint: string;
   vitalSigns: string;
   observations: string;
-  nurseId: string;
+  nurseId: number;
   nurseName: string;
   triageDate?: string;
   status: TriageStatus;
@@ -139,9 +139,9 @@ export interface TriagePayload {
   chiefComplaint: string;
   vitalSigns: string;
   observations: string;
-  nurseId: string;
-  nurseName: string;
   status?: TriageStatus;
+  alergiasReportadas?: AllergyPayload[];
+  vacinasReportadas?: VaccinePayload[];
 }
 
 export interface RecordEntry {

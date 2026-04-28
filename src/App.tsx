@@ -14,6 +14,7 @@ import { EditPatientPage } from "./features/patients/pages/EditPatientPage";
 import { CreateTriagePage } from "./features/triage/pages/CreateTriagePage";
 import { EditTriagePage } from "./features/triage/pages/EditTriagePage";
 import { TriageListPage } from "./features/triage/pages/TriageListPage";
+import { AttendancePage } from "./features/attendance/pages/AttendancePage";
 import { RecordsListPage } from "./features/records/pages/RecordsListPage";
 import { CreateRecordPage } from "./features/records/pages/CreateRecordPage";
 import { EditRecordPage } from "./features/records/pages/EditRecordPage";
@@ -123,6 +124,14 @@ export default function App() {
             element={
               <RoleRoute moduleKey="triagem">
                 <EditTriagePage />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="atendimento/:triageId"
+            element={
+              <RoleRoute moduleKey="prontuarios">
+                <AttendancePage />
               </RoleRoute>
             }
           />

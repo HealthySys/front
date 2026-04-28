@@ -142,6 +142,10 @@ export const api = {
     return request<Patient>("/api/patients/me");
   },
 
+  getPatient(id: number) {
+    return request<Patient>(`/api/patients/${id}`);
+  },
+
   searchPatients(name: string) {
     return request<Patient[]>(`/api/patients/search?nome=${encodeURIComponent(name)}`);
   },

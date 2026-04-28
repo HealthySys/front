@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "../../../components/layout/PageHeader";
+import { useToast } from "../../../components/feedback/ToastProvider";
 import { api } from "../../../services/api";
 import type { Patient, TriagePayload } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
@@ -12,39 +13,41 @@ import {
 
 export function CreateTriagePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [form, setForm] = useState<TriageFormState>(initialTriageForm);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadPatients = async () => {
       setLoading(true);
-      setError("");
 
       try {
         const response = await api.listPatients(true);
         setPatients(response);
       } catch (loadError) {
-        setError(normalizeError(loadError));
+        toast.error(normalizeError(loadError));
       } finally {
         setLoading(false);
       }
     };
 
     void loadPatients();
-  }, []);
+  }, [toast]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitting(true);
-    setFeedback("");
-    setError("");
 
     try {
       const selectedPatient = patients.find((patient) => patient.id === Number(form.patientId));
+      const cleanedAllergies = form.alergiasReportadas.filter(
+        (allergy) => allergy.nomeAlergia.trim().length > 0
+      );
+      const cleanedVaccines = form.vacinasReportadas.filter(
+        (vaccine) => vaccine.nomeVacina.trim().length > 0
+      );
       const payload: TriagePayload = {
         patientId: Number(form.patientId),
         patientName: selectedPatient?.nome || "",
@@ -52,16 +55,15 @@ export function CreateTriagePage() {
         chiefComplaint: form.chiefComplaint,
         vitalSigns: form.vitalSigns,
         observations: form.observations,
-        nurseId: form.nurseId,
-        nurseName: form.nurseName,
-        status: form.status
+        alergiasReportadas: cleanedAllergies,
+        vacinasReportadas: cleanedVaccines
       };
 
       await api.createTriage(payload);
-      setFeedback("Triagem registrada com sucesso.");
-      setTimeout(() => navigate("/app/triagem"), 800);
+      toast.success("Triagem feita com sucesso!");
+      navigate("/app/triagem");
     } catch (submitError) {
-      setError(normalizeError(submitError));
+      toast.error(normalizeError(submitError));
     } finally {
       setSubmitting(false);
     }
@@ -84,9 +86,6 @@ export function CreateTriagePage() {
         title="Registrar triagem"
         description="Cadastre uma nova classificação de risco e encaminhe o paciente para o fluxo adequado."
       />
-
-      {feedback ? <div className="alert success">{feedback}</div> : null}
-      {error ? <div className="alert error">{error}</div> : null}
 
       {patients.length ? (
         <article className="panel">
