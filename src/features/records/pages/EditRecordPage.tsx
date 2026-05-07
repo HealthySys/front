@@ -1,10 +1,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { Alert } from "../../../components/ui/Alert";
 import { RecordForm } from "../components/RecordForm";
 import { api } from "../../../services/api";
 import type { MedicalRecord, MedicalRecordPayload, Patient } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
 
 const initialRecordForm: MedicalRecordPayload = {
   patientId: 0,
@@ -30,22 +32,17 @@ export function EditRecordPage() {
     const loadPage = async () => {
       setLoading(true);
       setError("");
-
       try {
         const [patientsResponse, recordsResponse] = await Promise.all([
           api.listPatients(true),
           api.listRecords()
         ]);
-
         setPatients(patientsResponse);
-
         const record = recordsResponse.find((item: MedicalRecord) => item.id === id);
-
         if (!record) {
           setError("Prontuário não encontrado.");
           return;
         }
-
         setForm({
           patientId: record.patientId,
           patientName: record.patientName,
@@ -61,7 +58,6 @@ export function EditRecordPage() {
         setLoading(false);
       }
     };
-
     void loadPage();
   }, [id]);
 
@@ -72,13 +68,11 @@ export function EditRecordPage() {
     setSubmitting(true);
     setFeedback("");
     setError("");
-
     try {
       const payload: MedicalRecordPayload = {
         ...form,
         patientName: selectedPatient?.nome || form.patientName
       };
-
       await api.updateRecord(String(id), payload);
       setFeedback("Prontuário atualizado com sucesso.");
       setTimeout(() => navigate("/app/prontuarios"), 800);
@@ -90,37 +84,27 @@ export function EditRecordPage() {
   };
 
   if (loading) {
-    return (
-      <div className="page-stack">
-        <article className="panel">
-          <div className="empty-state">Carregando prontuário...</div>
-        </article>
-      </div>
-    );
+    return <div className={dashboard.loader}>Carregando prontuário…</div>;
   }
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="REGISTRO CLÍNICO"
+        eyebrow="Registro clínico"
         title="Editar prontuário"
         description="Atualize os dados clínicos e administrativos do prontuário."
       />
-
-      {feedback ? <div className="alert success">{feedback}</div> : null}
-      {error ? <div className="alert error">{error}</div> : null}
-
-      <article className="panel">
-        <RecordForm
-          form={form}
-          setForm={setForm}
-          patients={patients}
-          submitting={submitting}
-          isEditing
-          onSubmit={handleSubmit}
-          onCancel={() => navigate("/app/prontuarios")}
-        />
-      </article>
+      {feedback ? <Alert variant="success">{feedback}</Alert> : null}
+      {error ? <Alert variant="error">{error}</Alert> : null}
+      <RecordForm
+        form={form}
+        setForm={setForm}
+        patients={patients}
+        submitting={submitting}
+        isEditing
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/app/prontuarios")}
+      />
     </div>
   );
 }

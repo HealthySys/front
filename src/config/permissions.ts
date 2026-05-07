@@ -3,8 +3,7 @@ import {
   Users,
   UserRound,
   ClipboardPlus,
-  FileText,
-  Bell
+  FileText
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Role } from "../types";
@@ -15,7 +14,6 @@ export type ModuleKey =
   | "pacientes"
   | "triagem"
   | "prontuarios"
-  | "notificacoes"
   | "meu-prontuario";
 
 export interface ModuleDefinition {
@@ -65,12 +63,6 @@ export const modules: ModuleDefinition[] = [
     icon: FileText,
   },
   {
-    key: "notificacoes",
-    label: "Notificações",
-    path: "/app/notificacoes",
-    icon: Bell,
-  },
-  {
     key: "meu-prontuario",
     label: "Meu prontuário",
     path: "/app/meu-prontuario",
@@ -79,11 +71,19 @@ export const modules: ModuleDefinition[] = [
 ];
 
 const permissionMatrix: Record<Role, ModuleKey[]> = {
-  ADMIN: ["dashboard", "usuarios", "pacientes", "triagem", "prontuarios", "notificacoes"],
-  MEDICO: ["dashboard", "pacientes", "triagem", "prontuarios", "notificacoes"],
-  ENFERMEIRO: ["dashboard", "pacientes", "triagem", "prontuarios", "notificacoes"],
-  RECEPCIONISTA: ["dashboard", "pacientes"],
+  ADMIN: ["dashboard", "usuarios", "pacientes", "triagem", "prontuarios"],
+  MEDICO: ["dashboard", "triagem", "prontuarios"],
+  ENFERMEIRO: ["dashboard", "pacientes", "triagem"],
+  RECEPCIONISTA: ["pacientes"],
   PACIENTE: ["meu-prontuario"]
+};
+
+const writeMatrix: Record<Role, ModuleKey[]> = {
+  ADMIN: ["usuarios", "pacientes", "triagem", "prontuarios"],
+  MEDICO: ["prontuarios"],
+  ENFERMEIRO: ["triagem"],
+  RECEPCIONISTA: ["pacientes"],
+  PACIENTE: []
 };
 
 export function canAccess(role: Role | undefined, moduleKey: ModuleKey) {
@@ -92,6 +92,14 @@ export function canAccess(role: Role | undefined, moduleKey: ModuleKey) {
   }
 
   return permissionMatrix[role].includes(moduleKey);
+}
+
+export function canWrite(role: Role | undefined, moduleKey: ModuleKey) {
+  if (!role) {
+    return false;
+  }
+
+  return writeMatrix[role].includes(moduleKey);
 }
 
 export function initialRouteForRole(role: Role | undefined) {

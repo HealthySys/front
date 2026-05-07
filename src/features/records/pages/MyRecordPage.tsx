@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { Alert } from "../../../components/ui/Alert";
+import { Card } from "../../../components/ui/Card";
+import { InfoItem } from "../../../components/ui/InfoItem";
+import { Avatar } from "../../../components/ui/Avatar";
 import { useAuth } from "../../../auth/AuthProvider";
 import { api } from "../../../services/api";
 import type { MedicalRecord, Patient } from "../../../types";
-import { normalizeError } from "../../../utils/formatters";
+import { formatDate, normalizeError, sexoLabel } from "../../../utils/formatters";
 import { RecordDetails } from "../components/RecordDetails";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
 
 export function MyRecordPage() {
   const { user } = useAuth();
@@ -15,34 +20,22 @@ export function MyRecordPage() {
 
   useEffect(() => {
     let active = true;
-
     const loadMyRecord = async () => {
       setLoading(true);
       setError("");
-
       try {
         const currentPatient = await api.getCurrentPatient();
         const currentRecords = await api.getMyRecord(currentPatient.id);
-
-        if (!active) {
-          return;
-        }
-
+        if (!active) return;
         setPatient(currentPatient);
         setRecords(currentRecords);
       } catch (loadError) {
-        if (active) {
-          setError(normalizeError(loadError));
-        }
+        if (active) setError(normalizeError(loadError));
       } finally {
-        if (active) {
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       }
     };
-
     void loadMyRecord();
-
     return () => {
       active = false;
     };
@@ -51,41 +44,47 @@ export function MyRecordPage() {
   const latestRecord = records[0] ?? null;
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="PORTAL DO PACIENTE"
+        eyebrow="Portal do paciente"
         title="Meu prontuário"
         description={`Consulta em modo leitura para ${user?.nome ?? user?.username ?? "paciente"}.`}
       />
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
-      {error ? <div className="alert error">{error}</div> : null}
-
-      <article className="panel">
-        {loading ? (
-          <div className="empty-state">Carregando seus dados clínicos...</div>
-        ) : patient ? (
-          <div className="detail-stack">
-            <div className="info-list">
-              <div className="info-row">
-                <strong>Paciente</strong>
-                <span>{patient.nome}</span>
-              </div>
-              <div className="info-row">
-                <strong>CPF</strong>
-                <span>{patient.cpf}</span>
-              </div>
-              <div className="info-row">
-                <strong>E-mail</strong>
-                <span>{patient.email || "Não informado"}</span>
+      {loading ? (
+        <div className={dashboard.loader}>Carregando seus dados clínicos…</div>
+      ) : patient ? (
+        <>
+          <Card>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+              <Avatar name={patient.nome} size={48} fontSize={18} />
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>{patient.nome}</h3>
+                <span style={{ fontSize: 12, color: "var(--hs-text-3)" }}>
+                  {sexoLabel(patient.sexo)} · Nascimento {formatDate(patient.dataNascimento)}
+                </span>
               </div>
             </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: 10
+              }}
+            >
+              <InfoItem label="CPF" value={patient.cpf} />
+              <InfoItem label="Telefone" value={patient.telefone} />
+              <InfoItem label="E-mail" value={patient.email} />
+              <InfoItem label="Tipo sanguíneo" value={patient.tipoSanguineo} />
+            </div>
+          </Card>
 
-            <RecordDetails record={latestRecord} />
-          </div>
-        ) : (
-          <div className="empty-state">Nenhum cadastro de paciente vinculado à sua conta.</div>
-        )}
-      </article>
+          <RecordDetails record={latestRecord} />
+        </>
+      ) : (
+        <div className={dashboard.empty}>Nenhum cadastro de paciente vinculado à sua conta.</div>
+      )}
     </div>
   );
 }

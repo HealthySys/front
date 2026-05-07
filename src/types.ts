@@ -154,6 +154,94 @@ export interface RecordEntry {
   correlationId?: string;
 }
 
+export type ViaAdministracao =
+  | "ORAL"
+  | "INTRAVENOSA"
+  | "INTRAMUSCULAR"
+  | "SUBCUTANEA"
+  | "TOPICA"
+  | "INALATORIA"
+  | "OUTRA";
+
+export interface Prescription {
+  id: string;
+  medicamento: string;
+  dosagem: string;
+  via: ViaAdministracao;
+  frequencia: string;
+  duracao: string;
+  observacoes?: string;
+  doctorId?: string;
+  doctorName?: string;
+  prescribedAt?: string;
+  correlationId?: string;
+}
+
+export interface PrescriptionPayload {
+  medicamento: string;
+  dosagem: string;
+  via: ViaAdministracao;
+  frequencia: string;
+  duracao: string;
+  observacoes?: string;
+}
+
+export type TipoExame = "LABORATORIAL" | "IMAGEM" | "CARDIOLOGICO" | "OUTRO";
+
+export type StatusExame = "SOLICITADO" | "EM_ANDAMENTO" | "CONCLUIDO" | "CANCELADO";
+
+export interface Exam {
+  id: string;
+  tipo: TipoExame;
+  nome: string;
+  indicacaoClinica?: string;
+  status: StatusExame;
+  resultado?: string;
+  doctorId?: string;
+  doctorName?: string;
+  requestedAt?: string;
+  resultedAt?: string;
+  correlationId?: string;
+}
+
+export interface ExamPayload {
+  tipo: TipoExame;
+  nome: string;
+  indicacaoClinica?: string;
+}
+
+export interface ExamResultPayload {
+  resultado: string;
+  status?: StatusExame;
+}
+
+export interface AtendimentoConsultationInput {
+  diagnosis: string;
+  treatment: string;
+  observations: string;
+}
+
+export interface AtendimentoPrescriptionInput {
+  medicamento: string;
+  dosagem: string;
+  via: ViaAdministracao;
+  frequencia: string;
+  duracao: string;
+  observacoes?: string;
+}
+
+export interface AtendimentoExamInput {
+  tipo: TipoExame;
+  nome: string;
+  indicacaoClinica?: string;
+}
+
+export interface AtendimentoPayload {
+  consultation: AtendimentoConsultationInput | null;
+  prescriptions: AtendimentoPrescriptionInput[];
+  exams: AtendimentoExamInput[];
+}
+
 export interface MedicalRecord {
   id: string;
   patientId: number;
@@ -164,6 +252,8 @@ export interface MedicalRecord {
   responsibleDoctorId: string;
   responsibleDoctorName: string;
   entries: RecordEntry[];
+  prescriptions?: Prescription[];
+  exams?: Exam[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -186,15 +276,9 @@ export interface Notification {
   severity: string;
   patientId?: number;
   patientName?: string;
+  triageId?: number;
   correlationId?: string;
+  targetRoles?: string[];
   timestamp?: string;
 }
 
-export interface NotificationPayload {
-  type: string;
-  title: string;
-  message: string;
-  severity: string;
-  patientId?: number;
-  patientName?: string;
-}

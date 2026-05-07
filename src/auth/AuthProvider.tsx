@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (payload: LoginPayload) => {
     const nextSession = await api.login(payload);
     persistSession(nextSession.token, nextSession);
-    healthSysWebSocket.connect();
+    healthSysWebSocket.connect(nextSession.role);
 
     const profile = await api.getCurrentUser();
 
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        healthSysWebSocket.connect();
+        healthSysWebSocket.connect(profile.role);
         setUser(profile);
       })
       .catch(() => {

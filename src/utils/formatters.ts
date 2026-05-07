@@ -12,7 +12,7 @@ export const triageStatusOptions: TriageStatus[] = [
   "TRANSFERIDO",
   "ALTA_ADMINISTRATIVA"
 ];
-export const recordEntryTypeOptions = ["CONSULTA", "EXAME", "PROCEDIMENTO", "TRIAGEM"];
+export const recordEntryTypeOptions = ["CONSULTA", "EXAME", "TRIAGEM"];
 export const notificationSeverityOptions = ["INFO", "WARNING", "CRITICAL"];
 export const notificationTypeOptions = ["INFO", "ALERTA_CLINICO", "AVISO_OPERACIONAL", "EMERGENCY_ALERT"];
 

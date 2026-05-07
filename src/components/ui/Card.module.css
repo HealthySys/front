@@ -1,0 +1,10 @@
+.card {
+  background: var(--hs-surface);
+  border: 1px solid var(--hs-border);
+  border-radius: var(--hs-radius-lg);
+  box-shadow: var(--hs-shadow-sm);
+}
+
+.padded {
+  padding: var(--hs-sp-5);
+}

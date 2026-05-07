@@ -1,0 +1,92 @@
+.wrapper {
+  background: var(--hs-surface);
+  border: 1px solid var(--hs-border);
+  border-radius: var(--hs-radius-lg);
+  box-shadow: var(--hs-shadow-sm);
+  overflow: hidden;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.table thead th {
+  background: var(--hs-surface-2);
+  font-size: var(--hs-fs-xs);
+  font-weight: 700;
+  color: var(--hs-text-3);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  text-align: left;
+  border-bottom: 1px solid var(--hs-border);
+}
+
+.table tbody tr {
+  background: var(--hs-surface);
+  transition: background-color 100ms ease;
+}
+
+.table tbody tr:nth-child(even) {
+  background: var(--hs-surface-2);
+}
+
+.table tbody tr:hover {
+  background: var(--hs-accent-dim);
+}
+
+.table tbody td {
+  padding: 12px 18px;
+  font-size: 13.5px;
+  color: var(--hs-text);
+  border-bottom: 1px solid var(--hs-border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cellTwoLines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cellTwoLines strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--hs-text);
+}
+
+.cellTwoLines small {
+  font-size: 11.5px;
+  color: var(--hs-text-3);
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.empty {
+  padding: 28px;
+  text-align: center;
+  color: var(--hs-text-3);
+  font-size: 13.5px;
+}
+
+.footer {
+  padding: 12px 18px;
+  border-top: 1px solid var(--hs-border);
+  background: var(--hs-surface-2);
+  font-size: var(--hs-fs-sm);
+  color: var(--hs-text-3);
+}

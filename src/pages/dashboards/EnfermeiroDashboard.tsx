@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Activity, ClipboardCheck, Plus, Send, Users } from "lucide-react";
 import { useToast } from "../../components/feedback/ToastProvider";
-import { PageHeader } from "../../components/layout/PageHeader";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { StatCard } from "../../components/ui/StatCard";
+import { Button } from "../../components/ui/Button";
+import { QueueCard } from "../../components/ui/QueueCard";
+import { useNotificationCenter } from "../../features/notifications/NotificationCenter";
 import { api } from "../../services/api";
 import type { Patient, TriageEntry, User } from "../../types";
-import {
-  formatDateTime,
-  normalizeError,
-  riskLabel,
-  statusLabel
-} from "../../utils/formatters";
+import { Colors } from "../../design/tokens";
+import { formatDateTime, normalizeError, statusLabel } from "../../utils/formatters";
+import styles from "./Dashboard.module.css";
 
 interface EnfermeiroDashboardProps {
   user: User;
@@ -18,19 +20,19 @@ interface EnfermeiroDashboardProps {
 interface EnfermeiroSnapshot {
   activePatients: Patient[];
   recentTriage: TriageEntry[];
+  triages: TriageEntry[];
   queue: TriageEntry[];
 }
 
 const emptySnapshot: EnfermeiroSnapshot = {
   activePatients: [],
   recentTriage: [],
+  triages: [],
   queue: []
 };
 
 function isToday(value?: string) {
-  if (!value) {
-    return false;
-  }
+  if (!value) return false;
   const date = new Date(value);
   const now = new Date();
   return (
@@ -43,6 +45,7 @@ function isToday(value?: string) {
 export function EnfermeiroDashboard({ user }: EnfermeiroDashboardProps) {
   const navigate = useNavigate();
   const toast = useToast();
+  const { notifications, markRead } = useNotificationCenter();
   const [snapshot, setSnapshot] = useState<EnfermeiroSnapshot>(emptySnapshot);
   const [loading, setLoading] = useState(true);
 
@@ -65,6 +68,7 @@ export function EnfermeiroDashboard({ user }: EnfermeiroDashboardProps) {
       setSnapshot({
         activePatients: patients,
         recentTriage: sortedTriage.slice(0, 5),
+        triages,
         queue
       });
     } catch (loadError) {
@@ -78,107 +82,173 @@ export function EnfermeiroDashboard({ user }: EnfermeiroDashboardProps) {
     void loadDashboard();
   }, [loadDashboard]);
 
-  const ownerNurseId = user.id;
-  const triageToday = snapshot.recentTriage.filter((entry) => isToday(entry.triageDate));
-  const myTriagesToday = triageToday.filter((entry) => entry.nurseId === ownerNurseId);
+  const waitingForTriage = useMemo(() => {
+    const seen = new Set<number>();
+    return notifications
+      .filter((notification) => notification.type === "PATIENT_FORWARDED" && notification.patientId)
+      .filter((notification) => {
+        const notifTime = notification.timestamp ? new Date(notification.timestamp).getTime() : 0;
+        const hasTriageAfter = snapshot.triages.some(
+          (triage) =>
+            triage.patientId === notification.patientId &&
+            triage.triageDate &&
+            new Date(triage.triageDate).getTime() >= notifTime
+        );
+        return !hasTriageAfter;
+      })
+      .filter((notification) => {
+        if (!notification.patientId || seen.has(notification.patientId)) return false;
+        seen.add(notification.patientId);
+        return true;
+      });
+  }, [notifications, snapshot.triages]);
+
+  const handleStartTriage = (patientId: number, notificationId?: string) => {
+    if (notificationId) markRead(notificationId);
+    navigate(`/app/triagem/nova?patientId=${patientId}`);
+  };
+
+  const myTriagesToday = snapshot.recentTriage.filter(
+    (entry) => entry.nurseId === user.id && isToday(entry.triageDate)
+  );
 
   if (loading) {
-    return (
-      <div className="page-stack">
-        <article className="panel">
-          <div className="empty-state">Carregando seu painel de triagem...</div>
-        </article>
-      </div>
-    );
+    return <div className={styles.loader}>Carregando seu painel de triagem…</div>;
   }
 
   return (
-    <div className="page-stack">
+    <div className={styles.stack}>
       <PageHeader
-        eyebrow="VISÃO DO ENFERMEIRO"
-        title={`Olá, ${user.nome}`}
+        eyebrow="Visão do enfermeiro"
+        title={`Olá, ${user.nome.split(" ")[0]} 👋`}
         description="Pacientes prontos para triagem, suas classificações recentes e a fila atual da unidade."
         actions={
-          <button type="button" className="button" onClick={() => navigate("/app/triagem/nova")}>
-            + Nova triagem
-          </button>
+          <Button onClick={() => navigate("/app/triagem/nova")}>
+            <Plus size={14} />
+            Nova triagem
+          </Button>
         }
       />
 
-      <section className="stats-grid">
-        <article className="stat-card">
-          <span>Pacientes ativos</span>
-          <strong>{snapshot.activePatients.length}</strong>
-          <small>Disponíveis para nova triagem.</small>
-        </article>
-        <article className="stat-card">
-          <span>Suas triagens hoje</span>
-          <strong>{myTriagesToday.length}</strong>
-          <small>Classificações registradas por você.</small>
-        </article>
-        <article className="stat-card">
-          <span>Fila atual</span>
-          <strong>{snapshot.queue.length}</strong>
-          <small>Aguardando atendimento médico.</small>
-        </article>
+      <section className={styles.statsGrid}>
+        <StatCard
+          label="Aguardando triagem"
+          value={waitingForTriage.length}
+          subtitle="Encaminhados pela recepção"
+          color={Colors.danger}
+          icon={<Send size={18} />}
+        />
+        <StatCard
+          label="Pacientes ativos"
+          value={snapshot.activePatients.length}
+          subtitle="Disponíveis para triagem"
+          color={Colors.accent}
+          icon={<Users size={18} />}
+        />
+        <StatCard
+          label="Suas triagens hoje"
+          value={myTriagesToday.length}
+          subtitle="Classificações registradas"
+          color={Colors.success}
+          icon={<ClipboardCheck size={18} />}
+        />
+        <StatCard
+          label="Fila atual"
+          value={snapshot.queue.length}
+          subtitle="Aguardando médico"
+          color={Colors.warning}
+          icon={<Activity size={18} />}
+        />
       </section>
 
-      <section className="content-grid two-columns">
-        <article className="panel">
-          <div className="panel-head">
-            <div>
-              <p className="panel-kicker">SUAS TRIAGENS RECENTES</p>
-              <h2>Últimas classificações</h2>
-            </div>
-            <button type="button" className="button ghost" onClick={() => navigate("/app/triagem")}>
-              Ver todas
-            </button>
+      <article className={`${styles.section}${waitingForTriage.length ? ` ${styles.sectionDanger}` : ""}`}>
+        <header className={styles.sectionHead}>
+          <div>
+            <p className={styles.kicker}>Recém-chegados</p>
+            <h2 className={styles.sectionTitle}>Pacientes aguardando triagem</h2>
           </div>
+          {waitingForTriage.length ? (
+            <span className={styles.dangerCount}>{waitingForTriage.length}</span>
+          ) : null}
+        </header>
+        {waitingForTriage.length ? (
+          <div className={styles.cardList}>
+            {waitingForTriage.map((notification) => (
+              <QueueCard
+                key={notification.id}
+                name={notification.patientName ?? "Paciente"}
+                subMeta={
+                  notification.timestamp
+                    ? `Encaminhado em ${formatDateTime(notification.timestamp)}`
+                    : "Encaminhado pela recepção"
+                }
+              >
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    handleStartTriage(notification.patientId!, notification.id)
+                  }
+                >
+                  <Plus size={14} />
+                  Iniciar triagem
+                </Button>
+              </QueueCard>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.empty}>Nenhum paciente aguardando triagem no momento.</div>
+        )}
+      </article>
+
+      <section className={styles.mainGrid}>
+        <article className={styles.section}>
+          <header className={styles.sectionHead}>
+            <div>
+              <p className={styles.kicker}>Suas triagens recentes</p>
+              <h2 className={styles.sectionTitle}>Últimas classificações</h2>
+            </div>
+            <Button variant="secondary" size="sm" onClick={() => navigate("/app/triagem")}>
+              Ver todas
+            </Button>
+          </header>
           {snapshot.recentTriage.length ? (
-            <div className="list-stack">
+            <div className={styles.cardList}>
               {snapshot.recentTriage.map((entry) => (
-                <div key={entry.id} className="list-card">
-                  <div className="list-card-top">
-                    <strong>{entry.patientName}</strong>
-                    <span className={`pill risk ${entry.riskClassification.toLowerCase()}`}>
-                      {riskLabel(entry.riskClassification)}
-                    </span>
-                  </div>
-                  <p>{entry.chiefComplaint || "Sem queixa principal registrada."}</p>
-                  <small>
-                    {statusLabel(entry.status)} • {formatDateTime(entry.triageDate)}
-                  </small>
-                </div>
+                <QueueCard
+                  key={entry.id}
+                  name={entry.patientName}
+                  risk={entry.riskClassification}
+                  meta={`${statusLabel(entry.status)} · ${formatDateTime(entry.triageDate)}`}
+                  complaint={entry.chiefComplaint || "Sem queixa principal registrada."}
+                />
               ))}
             </div>
           ) : (
-            <div className="empty-state">Nenhuma triagem registrada ainda.</div>
+            <div className={styles.empty}>Nenhuma triagem registrada ainda.</div>
           )}
         </article>
 
-        <article className="panel">
-          <div className="panel-head">
+        <article className={styles.section}>
+          <header className={styles.sectionHead}>
             <div>
-              <p className="panel-kicker">FILA AGUARDANDO MÉDICO</p>
-              <h2>Pacientes triados</h2>
+              <p className={styles.kicker}>Fila aguardando médico</p>
+              <h2 className={styles.sectionTitle}>Pacientes triados</h2>
             </div>
-          </div>
+          </header>
           {snapshot.queue.length ? (
-            <div className="list-stack">
+            <div className={styles.cardList}>
               {snapshot.queue.slice(0, 5).map((entry) => (
-                <div key={entry.id} className="list-card">
-                  <div className="list-card-top">
-                    <strong>{entry.patientName}</strong>
-                    <span className={`pill risk ${entry.riskClassification.toLowerCase()}`}>
-                      {riskLabel(entry.riskClassification)}
-                    </span>
-                  </div>
-                  <small>Triado em {formatDateTime(entry.triageDate)}</small>
-                </div>
+                <QueueCard
+                  key={entry.id}
+                  compact
+                  name={entry.patientName}
+                  risk={entry.riskClassification}
+                  subMeta={`Triado em ${formatDateTime(entry.triageDate)}`}
+                />
               ))}
             </div>
           ) : (
-            <div className="empty-state">Nenhum paciente na fila no momento.</div>
+            <div className={styles.empty}>Nenhum paciente na fila no momento.</div>
           )}
         </article>
       </section>

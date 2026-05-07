@@ -1,14 +1,17 @@
 import type {
+  AtendimentoPayload,
   AuthResponse,
   BootstrapStatus,
   CreateUserPayload,
+  ExamPayload,
+  ExamResultPayload,
   LoginPayload,
   MedicalRecord,
   MedicalRecordPayload,
   Notification,
-  NotificationPayload,
   Patient,
   PatientPayload,
+  PrescriptionPayload,
   RecordEntry,
   TriageEntry,
   TriagePayload,
@@ -218,6 +221,12 @@ export const api = {
     });
   },
 
+  forwardPatientToTriage(patientId: number) {
+    return request<void>(`/api/triage/encaminhar/${patientId}`, {
+      method: "POST"
+    });
+  },
+
   listRecords(patientId?: number | string) {
     const suffix = patientId !== undefined ? `?patientId=${encodeURIComponent(String(patientId))}` : "";
     return request<MedicalRecord[]>(`/api/records${suffix}`);
@@ -248,6 +257,34 @@ export const api = {
     });
   },
 
+  addPrescription(id: string, payload: PrescriptionPayload) {
+    return request<MedicalRecord>(`/api/records/${id}/prescriptions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  addExam(id: string, payload: ExamPayload) {
+    return request<MedicalRecord>(`/api/records/${id}/exams`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  updateExamResult(id: string, examId: string, payload: ExamResultPayload) {
+    return request<MedicalRecord>(`/api/records/${id}/exams/${examId}/result`, {
+      method: "PATCH",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  registerAtendimento(id: string, payload: AtendimentoPayload) {
+    return request<MedicalRecord>(`/api/records/${id}/atendimentos`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+
   deleteRecord(id: string) {
     return request<void>(`/api/records/${id}`, {
       method: "DELETE"
@@ -256,19 +293,6 @@ export const api = {
 
   listNotifications() {
     return request<Notification[]>("/api/notifications");
-  },
-
-  broadcastNotification(payload: NotificationPayload) {
-    return request<Notification>("/api/notifications/broadcast", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-  },
-
-  clearNotifications() {
-    return request<void>("/api/notifications", {
-      method: "DELETE"
-    });
   },
 
   checkGateway() {

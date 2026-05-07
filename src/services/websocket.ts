@@ -1,6 +1,6 @@
-import { Client } from "@stomp/stompjs";
+import { Client, type StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import type { Notification, WebSocketSubscription } from "../types";
+import type { Notification, Role, WebSocketSubscription } from "../types";
 
 type NotificationHandler = (notification: Notification) => void;
 type StatusHandler = (status: string) => void;
@@ -10,15 +10,25 @@ class HealthSysWebSocketService {
 
   private connected = false;
 
+  private currentRole: Role | null = null;
+
+  private subscriptions: StompSubscription[] = [];
+
   private statusListeners = new Set<StatusHandler>();
 
   private notificationListeners = new Set<NotificationHandler>();
 
-  connect() {
+  connect(role?: Role | null) {
+    console.log("Attempting WebSocket connection with role:", role);
     if (this.client?.active || this.connected) {
+      if (role && role !== this.currentRole) {
+        this.currentRole = role;
+        this.refreshSubscriptions();
+      }
       return;
     }
 
+    this.currentRole = role ?? null;
     this.emitStatus("Conectando...");
 
     this.client = new Client({
@@ -27,20 +37,14 @@ class HealthSysWebSocketService {
       onConnect: () => {
         this.connected = true;
         this.emitStatus("Conectado em tempo real");
-
-        this.client?.subscribe("/topic/notifications", (message) => {
-          this.handleMessage(message.body);
-        });
-
-        this.client?.subscribe("/topic/alerts", (message) => {
-          this.handleMessage(message.body);
-        });
+        this.refreshSubscriptions();
       },
       onStompError: () => {
         this.emitStatus("Falha no broker");
       },
       onWebSocketClose: () => {
         this.connected = false;
+        this.subscriptions = [];
         this.emitStatus("Conexão encerrada");
       }
     });
@@ -57,6 +61,8 @@ class HealthSysWebSocketService {
     const activeClient = this.client;
     this.client = null;
     this.connected = false;
+    this.subscriptions = [];
+    this.currentRole = null;
     await activeClient.deactivate();
     this.emitStatus("Desconectado");
   }
@@ -77,6 +83,37 @@ class HealthSysWebSocketService {
         this.notificationListeners.delete(handler);
       }
     };
+  }
+
+  private refreshSubscriptions() {
+    if (!this.client || !this.connected) return;
+
+    this.subscriptions.forEach((sub) => {
+      try {
+        sub.unsubscribe();
+      } catch {
+      }
+    });
+    this.subscriptions = [];
+
+    const topics = this.topicsForRole(this.currentRole);
+    topics.forEach((topic) => {
+      const sub = this.client?.subscribe(topic, (message) => {
+        this.handleMessage(message.body);
+      });
+      if (sub) this.subscriptions.push(sub);
+    });
+  }
+
+  private topicsForRole(role: Role | null): string[] {
+    const topics = ["/topic/notifications", "/topic/alerts"];
+    if (role === "MEDICO") {
+      topics.push("/topic/notifications/medico", "/topic/alerts/medico");
+    }
+    if (role === "ENFERMEIRO") {
+      topics.push("/topic/notifications/enfermeiro", "/topic/alerts/enfermeiro");
+    }
+    return topics;
   }
 
   private handleMessage(body: string) {

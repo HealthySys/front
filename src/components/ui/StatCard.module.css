@@ -1,0 +1,47 @@
+.card {
+  background: var(--hs-surface);
+  border: 1px solid var(--hs-border);
+  border-radius: var(--hs-radius-lg);
+  box-shadow: var(--hs-shadow-sm);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  font-size: var(--hs-fs-xs);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--hs-text-3);
+}
+
+.iconBox {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.value {
+  font-size: var(--hs-fs-3xl);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: var(--hs-fs-sm);
+  color: var(--hs-text-3);
+}

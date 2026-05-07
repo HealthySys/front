@@ -1,10 +1,15 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Activity, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { initialRouteForRole } from "../config/permissions";
 import { api } from "../services/api";
 import { normalizeError } from "../utils/formatters";
+import { Button } from "../components/ui/Button";
+import { Alert } from "../components/ui/Alert";
+import { InputField } from "../components/ui/FormField";
+import fieldStyles from "../components/ui/FormField.module.css";
+import styles from "./LoginPage.module.css";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -24,33 +29,20 @@ export function LoginPage() {
   const [bootstrapSubmitting, setBootstrapSubmitting] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [adminPasswordVisible, setAdminPasswordVisible] = useState(false);
-  const [adminPasswordConfirmationVisible, setAdminPasswordConfirmationVisible] = useState(false);
 
   useEffect(() => {
     let active = true;
-
     api
       .getBootstrapStatus()
       .then((status) => {
-        if (!active) {
-          return;
-        }
-
-        setBootstrapRequired(status.bootstrapRequired);
+        if (active) setBootstrapRequired(status.bootstrapRequired);
       })
       .catch(() => {
-        if (!active) {
-          return;
-        }
-
-        setBootstrapRequired(false);
+        if (active) setBootstrapRequired(false);
       })
       .finally(() => {
-        if (active) {
-          setBootstrapLoading(false);
-        }
+        if (active) setBootstrapLoading(false);
       });
-
     return () => {
       active = false;
     };
@@ -60,7 +52,6 @@ export function LoginPage() {
     event.preventDefault();
     setSubmitting(true);
     setError("");
-
     try {
       const profile = await login({ username, password });
       navigate(initialRouteForRole(profile.role), { replace: true });
@@ -74,14 +65,11 @@ export function LoginPage() {
   const handleBootstrapSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setBootstrapError("");
-
     if (adminPassword !== adminPasswordConfirmation) {
       setBootstrapError("A confirmação de senha não confere.");
       return;
     }
-
     setBootstrapSubmitting(true);
-
     try {
       await api.register({
         username: adminUsername,
@@ -90,11 +78,7 @@ export function LoginPage() {
         password: adminPassword,
         role: "ADMIN"
       });
-
-      setUsername(adminUsername);
-      setPassword(adminPassword);
       setBootstrapRequired(false);
-
       const profile = await login({ username: adminUsername, password: adminPassword });
       navigate(initialRouteForRole(profile.role), { replace: true });
     } catch (submitError) {
@@ -105,152 +89,124 @@ export function LoginPage() {
   };
 
   return (
-    <div className="login-page">
-      <section className="login-card">
-        <div className="login-card-head">
-          <p className="page-eyebrow">ACESSO À PLATAFORMA</p>
-          <h3>{bootstrapRequired ? "Primeiro acesso" : "Entrar"}</h3>
-          <p>
+    <div className={styles.page}>
+      <section className={styles.card}>
+        <div className={styles.brand}>
+          <div className={styles.brandIcon}>
+            <Activity size={20} strokeWidth={2.2} />
+          </div>
+          <div className={styles.brandText}>
+            <span className={styles.brandName}>HealthSys</span>
+            <span className={styles.brandSub}>Plataforma hospitalar v2.0</span>
+          </div>
+        </div>
+
+        <div className={styles.head}>
+          <p className={styles.eyebrow}>Acesso à plataforma</p>
+          <h1 className={styles.title}>{bootstrapRequired ? "Primeiro acesso" : "Entrar"}</h1>
+          <p className={styles.subtitle}>
             {bootstrapRequired
-              ? "Nenhum usuário foi encontrado. Crie o administrador inicial para começar o projeto."
+              ? "Nenhum usuário foi encontrado. Crie o administrador inicial para começar."
               : "Use seu usuário ou e-mail para acessar as telas liberadas ao seu perfil."}
           </p>
         </div>
 
         {bootstrapLoading ? (
-          <div className="info-panel">
-            <strong>Verificando ambiente</strong>
-            <p>Estamos validando se este é o primeiro acesso do HealthSys.</p>
-          </div>
+          <div className={styles.notice}>Validando ambiente HealthSys…</div>
         ) : bootstrapRequired ? (
-          <form className="stack-form" onSubmit={handleBootstrapSubmit}>
-            <label className="field">
-              <span>Usuário administrador</span>
-              <input
-                value={adminUsername}
-                onChange={(event) => setAdminUsername(event.target.value)}
-                placeholder="admin"
-                autoComplete="username"
-                required
-              />
-            </label>
-
-            <label className="field">
-              <span>E-mail administrativo</span>
-              <input
-                value={adminEmail}
-                onChange={(event) => setAdminEmail(event.target.value)}
-                type="email"
-                placeholder="admin@healthsys.com"
-                autoComplete="email"
-                required
-              />
-            </label>
-
-            <label className="field">
-              <span>Nome completo</span>
-              <input
-                value={adminNome}
-                onChange={(event) => setAdminNome(event.target.value)}
-                placeholder="Administrador HealthSys"
-                required
-              />
-            </label>
-
-            <label className="field">
-              <span>Senha</span>
-              <div className="password-field">
-                <input
-                  value={adminPassword}
-                  onChange={(event) => setAdminPassword(event.target.value)}
-                  type={adminPasswordVisible ? "text" : "password"}
-                  placeholder="Senha com letra maiúscula, minúscula, número e símbolo"
-                  autoComplete="new-password"
-                  required
-                />
+          <form className={styles.form} onSubmit={handleBootstrapSubmit}>
+            <InputField
+              label="Usuário administrador"
+              required
+              value={adminUsername}
+              onChange={(event) => setAdminUsername(event.target.value)}
+              placeholder="admin"
+              autoComplete="username"
+            />
+            <InputField
+              label="Nome completo"
+              required
+              value={adminNome}
+              onChange={(event) => setAdminNome(event.target.value)}
+              placeholder="Administrador HealthSys"
+            />
+            <InputField
+              label="E-mail administrativo"
+              type="email"
+              required
+              value={adminEmail}
+              onChange={(event) => setAdminEmail(event.target.value)}
+              placeholder="admin@healthsys.com"
+              autoComplete="email"
+            />
+            <InputField
+              label="Senha"
+              required
+              type={adminPasswordVisible ? "text" : "password"}
+              value={adminPassword}
+              onChange={(event) => setAdminPassword(event.target.value)}
+              placeholder="Maiúscula, minúscula, número e símbolo"
+              autoComplete="new-password"
+              endAdornment={
                 <button
                   type="button"
-                  className="password-toggle"
-                  onClick={() => setAdminPasswordVisible((current) => !current)}
+                  className={fieldStyles.adornment}
+                  onClick={() => setAdminPasswordVisible((v) => !v)}
                   aria-label={adminPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
-                  aria-pressed={adminPasswordVisible}
                 >
-                  {adminPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {adminPasswordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
-              </div>
-            </label>
-
-            <label className="field">
-              <span>Confirmar senha</span>
-              <div className="password-field">
-                <input
-                  value={adminPasswordConfirmation}
-                  onChange={(event) => setAdminPasswordConfirmation(event.target.value)}
-                  type={adminPasswordConfirmationVisible ? "text" : "password"}
-                  placeholder="Repita a senha"
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setAdminPasswordConfirmationVisible((current) => !current)}
-                  aria-label={adminPasswordConfirmationVisible ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
-                  aria-pressed={adminPasswordConfirmationVisible}
-                >
-                  {adminPasswordConfirmationVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </label>
-
-            <button type="submit" className="button" disabled={bootstrapSubmitting || isLoading}>
-              {bootstrapSubmitting ? "Criando acesso inicial..." : "Criar administrador inicial"}
-            </button>
+              }
+            />
+            <InputField
+              label="Confirmar senha"
+              required
+              type="password"
+              value={adminPasswordConfirmation}
+              onChange={(event) => setAdminPasswordConfirmation(event.target.value)}
+              placeholder="Repita a senha"
+              autoComplete="new-password"
+            />
+            {bootstrapError ? <Alert variant="error">{bootstrapError}</Alert> : null}
+            <Button type="submit" disabled={bootstrapSubmitting || isLoading}>
+              {bootstrapSubmitting ? "Criando acesso inicial…" : "Criar administrador inicial"}
+            </Button>
           </form>
         ) : (
-          <form className="stack-form" onSubmit={handleSubmit}>
-            <label className="field">
-              <span>Usuário ou e-mail</span>
-              <input
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder="admin ou admin@example.com"
-                autoComplete="username"
-                required
-              />
-            </label>
-
-            <label className="field">
-              <span>Senha</span>
-              <div className="password-field">
-                <input
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  type={passwordVisible ? "text" : "password"}
-                  placeholder="Sua senha"
-                  autoComplete="current-password"
-                  required
-                />
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <InputField
+              label="Usuário ou e-mail"
+              required
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="admin ou admin@example.com"
+              autoComplete="username"
+            />
+            <InputField
+              label="Senha"
+              required
+              type={passwordVisible ? "text" : "password"}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Sua senha"
+              autoComplete="current-password"
+              endAdornment={
                 <button
                   type="button"
-                  className="password-toggle"
-                  onClick={() => setPasswordVisible((current) => !current)}
+                  className={fieldStyles.adornment}
+                  onClick={() => setPasswordVisible((v) => !v)}
                   aria-label={passwordVisible ? "Ocultar senha" : "Mostrar senha"}
-                  aria-pressed={passwordVisible}
                 >
-                  {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {passwordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
-              </div>
-            </label>
-
-            <button type="submit" className="button" disabled={submitting || isLoading}>
-              {submitting ? "Autenticando..." : "Entrar no HealthSys"}
-            </button>
+              }
+            />
+            {error ? <Alert variant="error">{error}</Alert> : null}
+            <Button type="submit" disabled={submitting || isLoading}>
+              {submitting ? "Autenticando…" : "Entrar no HealthSys"}
+            </Button>
           </form>
         )}
-
-        {error ? <div className="alert error">{error}</div> : null}
-        {bootstrapError ? <div className="alert error">{bootstrapError}</div> : null}
       </section>
     </div>
   );

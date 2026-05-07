@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { Alert } from "../../../components/ui/Alert";
+import { Button } from "../../../components/ui/Button";
 import { api } from "../../../services/api";
 import type { MedicalRecord } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
 import { RecordDetails } from "../components/RecordDetails";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
 
 export function RecordDetailsPage() {
   const navigate = useNavigate();
@@ -17,16 +21,13 @@ export function RecordDetailsPage() {
     const loadRecord = async () => {
       setLoading(true);
       setError("");
-
       try {
         const response = await api.listRecords();
         const selected = response.find((item) => item.id === id) || null;
-
         if (!selected) {
           setError("Prontuário não encontrado.");
           return;
         }
-
         setRecord(selected);
       } catch (loadError) {
         setError(normalizeError(loadError));
@@ -34,43 +35,36 @@ export function RecordDetailsPage() {
         setLoading(false);
       }
     };
-
     void loadRecord();
   }, [id]);
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="REGISTRO CLÍNICO"
-        title="Detalhes do prontuário"
-        description="Visualize o histórico consolidado de evoluções e informações clínicas do paciente."
+        eyebrow="Registro clínico"
+        title={record ? `Prontuário de ${record.patientName}` : "Prontuário"}
+        description="Histórico consolidado de evoluções e informações clínicas do paciente."
         actions={
-          <div className="page-actions">
-            <button type="button" className="button ghost" onClick={() => navigate("/app/prontuarios")}>
+          <>
+            <Button variant="secondary" onClick={() => navigate("/app/prontuarios")}>
+              <ArrowLeft size={14} />
               Voltar
-            </button>
+            </Button>
             {record ? (
-              <button
-                type="button"
-                className="button"
-                onClick={() => navigate(`/app/prontuarios/${record.id}/editar`)}
-              >
-                Editar prontuário
-              </button>
+              <Button onClick={() => navigate(`/app/prontuarios/${record.id}/editar`)}>
+                <Pencil size={14} />
+                Editar
+              </Button>
             ) : null}
-          </div>
+          </>
         }
       />
-
-      {error ? <div className="alert error">{error}</div> : null}
-
-      <article className="panel">
-        {loading ? (
-          <div className="empty-state">Carregando prontuário...</div>
-        ) : (
-          <RecordDetails record={record} />
-        )}
-      </article>
+      {error ? <Alert variant="error">{error}</Alert> : null}
+      {loading ? (
+        <div className={dashboard.loader}>Carregando prontuário…</div>
+      ) : (
+        <RecordDetails record={record} />
+      )}
     </div>
   );
 }

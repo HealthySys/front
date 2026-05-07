@@ -8,13 +8,7 @@ export function DashboardPage() {
   const { user } = useAuth();
 
   if (!user) {
-    return (
-      <div className="page-stack">
-        <article className="panel">
-          <div className="empty-state">Carregando seu perfil...</div>
-        </article>
-      </div>
-    );
+    return <div style={{ padding: 40, color: "var(--hs-text-3)" }}>Carregando seu perfil…</div>;
   }
 
   switch (user.role) {

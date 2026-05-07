@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
+import { Activity, Bell, Server, UserCheck, Users } from "lucide-react";
 import { useToast } from "../../components/feedback/ToastProvider";
-import { PageHeader } from "../../components/layout/PageHeader";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { StatCard } from "../../components/ui/StatCard";
+import { QueueCard } from "../../components/ui/QueueCard";
 import { api } from "../../services/api";
 import type { Notification, TriageEntry, User } from "../../types";
-import {
-  formatDateTime,
-  normalizeError,
-  riskLabel,
-  severityLabel,
-  statusLabel
-} from "../../utils/formatters";
+import { Colors } from "../../design/tokens";
+import { formatDateTime, normalizeError, severityLabel, statusLabel } from "../../utils/formatters";
+import styles from "./Dashboard.module.css";
 
 interface AdminDashboardProps {
   user: User;
@@ -37,6 +36,17 @@ const emptySnapshot: AdminSnapshot = {
   recentNotifications: []
 };
 
+function severityClass(severity?: string) {
+  switch (severity) {
+    case "CRITICAL":
+      return styles.severityCritical;
+    case "WARNING":
+      return styles.severityWarning;
+    default:
+      return styles.severityInfo;
+  }
+}
+
 export function AdminDashboard({ user }: AdminDashboardProps) {
   const toast = useToast();
   const [snapshot, setSnapshot] = useState<AdminSnapshot>(emptySnapshot);
@@ -58,9 +68,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
           api.listNotifications()
         ]);
 
-        if (!active) {
-          return;
-        }
+        if (!active) return;
 
         setSnapshot({
           gatewayStatus: gateway.status,
@@ -73,13 +81,9 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
           recentNotifications: notifications.slice(0, 5)
         });
       } catch (loadError) {
-        if (active) {
-          toast.error(normalizeError(loadError));
-        }
+        if (active) toast.error(normalizeError(loadError));
       } finally {
-        if (active) {
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       }
     };
 
@@ -91,100 +95,100 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
   }, [toast]);
 
   if (loading) {
-    return (
-      <div className="page-stack">
-        <article className="panel">
-          <div className="empty-state">Carregando visão administrativa...</div>
-        </article>
-      </div>
-    );
+    return <div className={styles.loader}>Carregando visão administrativa…</div>;
   }
 
   return (
-    <div className="page-stack">
+    <div className={styles.stack}>
       <PageHeader
-        eyebrow="VISÃO ADMINISTRATIVA"
-        title={`Olá, ${user.nome}`}
+        eyebrow="Visão administrativa"
+        title={`Olá, ${user.nome.split(" ")[0]} 👋`}
         description="Indicadores gerais da plataforma e saúde dos serviços distribuídos."
       />
 
-      <section className="stats-grid">
-        <article className="stat-card">
-          <span>Gateway</span>
-          <strong>{snapshot.gatewayStatus}</strong>
-          <small>Ponto de entrada HTTP.</small>
-        </article>
-        <article className="stat-card">
-          <span>Usuários</span>
-          <strong>{snapshot.users}</strong>
-          <small>Perfis cadastrados na base.</small>
-        </article>
-        <article className="stat-card">
-          <span>Pacientes ativos</span>
-          <strong>{snapshot.activePatients}</strong>
-          <small>Habilitados para atendimento.</small>
-        </article>
-        <article className="stat-card">
-          <span>Fila de triagem</span>
-          <strong>{snapshot.triageQueue}</strong>
-          <small>Aguardando atendimento médico.</small>
-        </article>
+      <section className={styles.statsGrid}>
+        <StatCard
+          label="Gateway"
+          value={snapshot.gatewayStatus}
+          subtitle="Ponto de entrada HTTP"
+          color={Colors.accent}
+          icon={<Server size={18} />}
+        />
+        <StatCard
+          label="Usuários"
+          value={snapshot.users}
+          subtitle="Perfis cadastrados"
+          color={Colors.text2}
+          icon={<Users size={18} />}
+        />
+        <StatCard
+          label="Pacientes ativos"
+          value={snapshot.activePatients}
+          subtitle={`${snapshot.patients} no total`}
+          color={Colors.success}
+          icon={<UserCheck size={18} />}
+        />
+        <StatCard
+          label="Fila de triagem"
+          value={snapshot.triageQueue}
+          subtitle="Aguardando médico"
+          color={Colors.warning}
+          icon={<Activity size={18} />}
+        />
       </section>
 
-      <section className="content-grid two-columns">
-        <article className="panel">
-          <div className="panel-head">
+      <section className={styles.mainGrid}>
+        <article className={styles.section}>
+          <header className={styles.sectionHead}>
             <div>
-              <p className="panel-kicker">FILAS E RISCO</p>
-              <h2>Casos em atenção</h2>
+              <p className={styles.kicker}>Filas e risco</p>
+              <h2 className={styles.sectionTitle}>Casos em atenção</h2>
             </div>
-          </div>
+          </header>
           {snapshot.recentTriage.length ? (
-            <div className="list-stack">
+            <div className={styles.cardList}>
               {snapshot.recentTriage.map((entry) => (
-                <div key={entry.id} className="list-card">
-                  <div className="list-card-top">
-                    <strong>{entry.patientName}</strong>
-                    <span className={`pill risk ${entry.riskClassification.toLowerCase()}`}>
-                      {riskLabel(entry.riskClassification)}
-                    </span>
-                  </div>
-                  <p>{entry.chiefComplaint || "Sem queixa principal registrada."}</p>
-                  <small>
-                    {statusLabel(entry.status)} • {formatDateTime(entry.triageDate)}
-                  </small>
-                </div>
+                <QueueCard
+                  key={entry.id}
+                  name={entry.patientName}
+                  risk={entry.riskClassification}
+                  meta={`${statusLabel(entry.status)} · ${formatDateTime(entry.triageDate)}`}
+                  complaint={entry.chiefComplaint || "Sem queixa principal registrada."}
+                />
               ))}
             </div>
           ) : (
-            <div className="empty-state">Nenhum caso na fila neste momento.</div>
+            <div className={styles.empty}>Nenhum caso na fila neste momento.</div>
           )}
         </article>
 
-        <article className="panel">
-          <div className="panel-head">
+        <article className={styles.section}>
+          <header className={styles.sectionHead}>
             <div>
-              <p className="panel-kicker">COMUNICAÇÃO OPERACIONAL</p>
-              <h2>Últimas notificações</h2>
+              <p className={styles.kicker}>Comunicação operacional</p>
+              <h2 className={styles.sectionTitle}>Últimas notificações</h2>
             </div>
-          </div>
+          </header>
           {snapshot.recentNotifications.length ? (
-            <div className="list-stack">
+            <div className={styles.cardList}>
               {snapshot.recentNotifications.map((notification) => (
-                <div key={notification.id} className="list-card">
-                  <div className="list-card-top">
-                    <strong>{notification.title}</strong>
-                    <span className={`pill severity ${notification.severity?.toLowerCase()}`}>
-                      {severityLabel(notification.severity)}
-                    </span>
+                <div key={notification.id} className={styles.urgentNotice}>
+                  <Bell className={`${styles.urgentNoticeIcon} ${severityClass(notification.severity)}`} size={18} />
+                  <div className={styles.urgentNoticeBody}>
+                    <strong>
+                      {notification.title}{" "}
+                      <span className={severityClass(notification.severity)} style={{ fontSize: 11 }}>
+                        · {severityLabel(notification.severity)}
+                      </span>
+                    </strong>
+                    <p>{notification.message}</p>
+                    <small>{formatDateTime(notification.timestamp)}</small>
                   </div>
-                  <p>{notification.message}</p>
-                  <small>{formatDateTime(notification.timestamp)}</small>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="empty-state">Nenhuma notificação recente.</div>
+            <div className={styles.empty}>Nenhuma notificação recente.</div>
           )}
         </article>
       </section>

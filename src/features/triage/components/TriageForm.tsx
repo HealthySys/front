@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import type { AllergyPayload, Patient, Severidade, TriageEntry, VaccinePayload } from "../../../types";
 import {
   riskLabel,
@@ -6,6 +7,10 @@ import {
   statusLabel,
   triageStatusOptions
 } from "../../../utils/formatters";
+import { Button } from "../../../components/ui/Button";
+import { SelectField, TextAreaField } from "../../../components/ui/FormField";
+import { PatientCombobox } from "./PatientCombobox";
+import patientStyles from "../../patients/components/PatientForm.module.css";
 
 export type TriageFormState = {
   patientId: string;
@@ -16,6 +21,8 @@ export type TriageFormState = {
   status: TriageEntry["status"];
   alergiasReportadas: AllergyPayload[];
   vacinasReportadas: VaccinePayload[];
+  existingAllergies: AllergyPayload[];
+  existingVaccines: VaccinePayload[];
 };
 
 export const initialTriageForm: TriageFormState = {
@@ -26,13 +33,21 @@ export const initialTriageForm: TriageFormState = {
   observations: "",
   status: "AGUARDANDO_ATENDIMENTO",
   alergiasReportadas: [],
-  vacinasReportadas: []
+  vacinasReportadas: [],
+  existingAllergies: [],
+  existingVaccines: []
 };
 
 const emptyAllergy: AllergyPayload = { nomeAlergia: "", severidade: "LEVE" };
 const emptyVaccine: VaccinePayload = { nomeVacina: "", dataAplicacao: "" };
-
 const severityOptions: Severidade[] = ["LEVE", "MODERADA", "GRAVE"];
+
+const formatVaccineDate = (raw: string) => {
+  if (!raw) return "—";
+  const [year, month, day] = raw.split("-");
+  if (!year || !month || !day) return raw;
+  return `${day}/${month}/${year}`;
+};
 
 type TriageFormProps = {
   patients: Patient[];
@@ -93,205 +108,251 @@ export function TriageForm({
       vacinasReportadas: [...current.vacinasReportadas, { ...emptyVaccine }]
     }));
 
+  const hasExistingAllergies = form.existingAllergies.length > 0;
+  const hasExistingVaccines = form.existingVaccines.length > 0;
+
   return (
-    <form className="form-grid wide-grid" onSubmit={onSubmit}>
-      <label className="field field-span-2">
-        <span>Paciente</span>
-        <select
-          value={form.patientId}
-          onChange={(event) => setForm((current) => ({ ...current, patientId: event.target.value }))}
-          required
-        >
-          <option value="">Selecione um paciente</option>
-          {patients.map((patient) => (
-            <option key={patient.id} value={patient.id}>
-              {patient.nome} • {patient.cpf}
-            </option>
-          ))}
-        </select>
-      </label>
+    <form className={patientStyles.formContainer} onSubmit={onSubmit}>
+      <div className={patientStyles.card}>
+        <div className={patientStyles.cardHeader}>
+          <div>
+            <h3 className={patientStyles.cardTitle}>Identificação e classificação</h3>
+            <p className={patientStyles.cardDesc}>Selecione o paciente e defina o risco.</p>
+          </div>
+        </div>
+        <div className={patientStyles.grid}>
+          <PatientCombobox
+            patients={patients}
+            value={form.patientId}
+            onChange={(patientId) => setForm((c) => ({ ...c, patientId }))}
+            required
+          />
 
-      <label className="field">
-        <span>Classificação de risco</span>
-        <select
-          value={form.riskClassification}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              riskClassification: event.target.value as TriageEntry["riskClassification"]
-            }))
-          }
-        >
-          {riskOptions.map((risk) => (
-            <option key={risk} value={risk}>
-              {riskLabel(risk)} • {riskSla(risk)}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {isEditing ? (
-        <label className="field">
-          <span>Status</span>
-          <select
-            value={form.status}
+          <SelectField
+            label="Classificação de risco"
+            value={form.riskClassification}
             onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                status: event.target.value as TriageEntry["status"]
+              setForm((c) => ({
+                ...c,
+                riskClassification: event.target.value as TriageEntry["riskClassification"]
               }))
             }
           >
-            {triageStatusOptions.map((status) => (
-              <option key={status} value={status}>
-                {statusLabel(status)}
+            {riskOptions.map((risk) => (
+              <option key={risk} value={risk}>
+                {riskLabel(risk)} · {riskSla(risk)}
               </option>
             ))}
-          </select>
-        </label>
-      ) : null}
+          </SelectField>
 
-      <label className="field field-span-2">
-        <span>Queixa principal</span>
-        <textarea
-          value={form.chiefComplaint}
-          onChange={(event) => setForm((current) => ({ ...current, chiefComplaint: event.target.value }))}
-          rows={3}
-          placeholder="Sintomas, sinais e motivo principal da procura"
-        />
-      </label>
+          {isEditing ? (
+            <SelectField
+              label="Status"
+              value={form.status}
+              onChange={(event) =>
+                setForm((c) => ({ ...c, status: event.target.value as TriageEntry["status"] }))
+              }
+            >
+              {triageStatusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {statusLabel(status)}
+                </option>
+              ))}
+            </SelectField>
+          ) : null}
+        </div>
+      </div>
 
-      <label className="field field-span-2">
-        <span>Sinais vitais</span>
-        <textarea
-          value={form.vitalSigns}
-          onChange={(event) => setForm((current) => ({ ...current, vitalSigns: event.target.value }))}
-          rows={3}
-          placeholder="PA, FC, FR, SpO2, temperatura e outros dados relevantes"
-        />
-      </label>
-
-      <label className="field field-span-2">
-        <span>Observações adicionais</span>
-        <textarea
-          value={form.observations}
-          onChange={(event) => setForm((current) => ({ ...current, observations: event.target.value }))}
-          rows={3}
-          placeholder="Informações complementares para priorização e continuidade"
-        />
-      </label>
+      <div className={patientStyles.card}>
+        <div className={patientStyles.cardHeader}>
+          <div>
+            <h3 className={patientStyles.cardTitle}>Avaliação clínica</h3>
+            <p className={patientStyles.cardDesc}>Queixa, sinais vitais e observações relevantes.</p>
+          </div>
+        </div>
+        <div className={patientStyles.grid}>
+          <TextAreaField
+            label="Queixa principal"
+            value={form.chiefComplaint}
+            onChange={(event) => setForm((c) => ({ ...c, chiefComplaint: event.target.value }))}
+            placeholder="Sintomas, sinais e motivo principal da procura"
+            rows={3}
+            span2
+          />
+          <TextAreaField
+            label="Sinais vitais"
+            value={form.vitalSigns}
+            onChange={(event) => setForm((c) => ({ ...c, vitalSigns: event.target.value }))}
+            placeholder="PA, FC, FR, SpO₂, temperatura e outros dados relevantes"
+            rows={3}
+            span2
+          />
+          <TextAreaField
+            label="Observações adicionais"
+            value={form.observations}
+            onChange={(event) => setForm((c) => ({ ...c, observations: event.target.value }))}
+            placeholder="Informações complementares para priorização e continuidade"
+            rows={2}
+            span2
+          />
+        </div>
+      </div>
 
       {!isEditing ? (
         <>
-          <div className="field-span-2">
-            <div className="panel-head">
-              <div>
-                <p className="panel-kicker">ALERGIAS RELATADAS</p>
+          {hasExistingAllergies || hasExistingVaccines ? (
+            <div className={patientStyles.card}>
+              <div className={patientStyles.cardHeader}>
+                <div>
+                  <h3 className={patientStyles.cardTitle}>Histórico do paciente</h3>
+                  <p className={patientStyles.cardDesc}>
+                    Itens já cadastrados no prontuário. Apenas para consulta — não serão duplicados.
+                  </p>
+                </div>
               </div>
-              <button type="button" className="button ghost" onClick={addAllergy}>
-                + Adicionar alergia
-              </button>
-            </div>
 
-            {form.alergiasReportadas.length === 0 ? (
-              <p className="empty-state">Nenhuma alergia relatada nesta triagem.</p>
-            ) : (
-              <div className="stack-form">
-                {form.alergiasReportadas.map((allergy, index) => (
-                  <div key={index} className="form-grid wide-grid">
-                    <label className="field">
-                      <span>Nome da alergia</span>
+              {hasExistingAllergies ? (
+                <>
+                  <p className={patientStyles.cardDesc}>Alergias cadastradas</p>
+                  {form.existingAllergies.map((allergy, index) => (
+                    <div key={`existing-allergy-${index}`} className={patientStyles.row}>
+                      <span className={patientStyles.numberCircle}>{index + 1}</span>
                       <input
+                        className={patientStyles.smallInput}
                         value={allergy.nomeAlergia}
-                        onChange={(event) => updateAllergy(index, { nomeAlergia: event.target.value })}
-                        placeholder="Ex: Dipirona"
+                        readOnly
+                        disabled
                       />
-                    </label>
-
-                    <label className="field">
-                      <span>Severidade</span>
-                      <select
+                      <input
+                        className={patientStyles.smallInput}
                         value={allergy.severidade}
-                        onChange={(event) =>
-                          updateAllergy(index, { severidade: event.target.value as Severidade })
-                        }
-                      >
-                        {severityOptions.map((severity) => (
-                          <option key={severity} value={severity}>
-                            {severity}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <div className="form-actions">
-                      <button type="button" className="button ghost" onClick={() => removeAllergy(index)}>
-                        Remover
-                      </button>
+                        readOnly
+                        disabled
+                      />
+                      <span />
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </>
+              ) : null}
+
+              {hasExistingVaccines ? (
+                <>
+                  <p className={patientStyles.cardDesc}>Vacinas cadastradas</p>
+                  {form.existingVaccines.map((vaccine, index) => (
+                    <div key={`existing-vaccine-${index}`} className={patientStyles.row}>
+                      <span className={patientStyles.numberCircle}>{index + 1}</span>
+                      <input
+                        className={patientStyles.smallInput}
+                        value={vaccine.nomeVacina}
+                        readOnly
+                        disabled
+                      />
+                      <input
+                        className={patientStyles.smallInput}
+                        value={formatVaccineDate(vaccine.dataAplicacao)}
+                        readOnly
+                        disabled
+                      />
+                      <span />
+                    </div>
+                  ))}
+                </>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className={patientStyles.card}>
+            <div className={patientStyles.cardHeader}>
+              <div>
+                <h3 className={patientStyles.cardTitle}>Novas alergias relatadas</h3>
+                <p className={patientStyles.cardDesc}>
+                  Adicione apenas alergias informadas nesta triagem. Itens já no prontuário não precisam ser repetidos.
+                </p>
               </div>
+              <Button type="button" variant="secondary" size="sm" onClick={addAllergy}>
+                + Adicionar alergia
+              </Button>
+            </div>
+            {form.alergiasReportadas.length === 0 ? (
+              <p className={patientStyles.empty}>Nenhuma nova alergia relatada.</p>
+            ) : (
+              form.alergiasReportadas.map((allergy, index) => (
+                <div key={index} className={patientStyles.row}>
+                  <span className={patientStyles.numberCircle}>{index + 1}</span>
+                  <input
+                    className={patientStyles.smallInput}
+                    value={allergy.nomeAlergia}
+                    onChange={(e) => updateAllergy(index, { nomeAlergia: e.target.value })}
+                    placeholder="Ex: Dipirona, Amendoim, Látex…"
+                  />
+                  <select
+                    className={patientStyles.smallInput}
+                    value={allergy.severidade}
+                    onChange={(e) => updateAllergy(index, { severidade: e.target.value as Severidade })}
+                  >
+                    {severityOptions.map((severity) => (
+                      <option key={severity} value={severity}>
+                        {severity}
+                      </option>
+                    ))}
+                  </select>
+                  <Button type="button" variant="danger" size="sm" onClick={() => removeAllergy(index)}>
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              ))
             )}
           </div>
 
-          <div className="field-span-2">
-            <div className="panel-head">
+          <div className={patientStyles.card}>
+            <div className={patientStyles.cardHeader}>
               <div>
-                <p className="panel-kicker">VACINAS RELATADAS</p>
+                <h3 className={patientStyles.cardTitle}>Novas vacinas relatadas</h3>
+                <p className={patientStyles.cardDesc}>
+                  Imunizações informadas nesta triagem. Vacinas já no prontuário não precisam ser repetidas.
+                </p>
               </div>
-              <button type="button" className="button ghost" onClick={addVaccine}>
+              <Button type="button" variant="secondary" size="sm" onClick={addVaccine}>
                 + Adicionar vacina
-              </button>
+              </Button>
             </div>
-
             {form.vacinasReportadas.length === 0 ? (
-              <p className="empty-state">Nenhuma vacina relatada nesta triagem.</p>
+              <p className={patientStyles.empty}>Nenhuma nova vacina relatada.</p>
             ) : (
-              <div className="stack-form">
-                {form.vacinasReportadas.map((vaccine, index) => (
-                  <div key={index} className="form-grid wide-grid">
-                    <label className="field">
-                      <span>Nome da vacina</span>
-                      <input
-                        value={vaccine.nomeVacina}
-                        onChange={(event) => updateVaccine(index, { nomeVacina: event.target.value })}
-                        placeholder="Ex: Tétano"
-                      />
-                    </label>
-
-                    <label className="field">
-                      <span>Data de aplicação</span>
-                      <input
-                        type="date"
-                        value={vaccine.dataAplicacao}
-                        onChange={(event) => updateVaccine(index, { dataAplicacao: event.target.value })}
-                      />
-                    </label>
-
-                    <div className="form-actions">
-                      <button type="button" className="button ghost" onClick={() => removeVaccine(index)}>
-                        Remover
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              form.vacinasReportadas.map((vaccine, index) => (
+                <div key={index} className={patientStyles.row}>
+                  <span className={patientStyles.numberCircle}>{index + 1}</span>
+                  <input
+                    className={patientStyles.smallInput}
+                    value={vaccine.nomeVacina}
+                    onChange={(e) => updateVaccine(index, { nomeVacina: e.target.value })}
+                    placeholder="Nome da vacina"
+                  />
+                  <input
+                    className={patientStyles.smallInput}
+                    type="date"
+                    value={vaccine.dataAplicacao}
+                    onChange={(e) => updateVaccine(index, { dataAplicacao: e.target.value })}
+                  />
+                  <Button type="button" variant="danger" size="sm" onClick={() => removeVaccine(index)}>
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              ))
             )}
           </div>
         </>
       ) : null}
 
-      <div className="form-actions field-span-2">
-        <button type="submit" className="button" disabled={submitting}>
-          {submitting ? "Salvando..." : isEditing ? "Salvar alterações" : "Registrar triagem"}
-        </button>
-
+      <div className={patientStyles.formActions}>
         {onCancel ? (
-          <button type="button" className="button ghost" onClick={onCancel}>
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Cancelar
-          </button>
+          </Button>
         ) : null}
+        <Button type="submit" disabled={submitting}>
+          {submitting ? "Salvando…" : isEditing ? "Salvar alterações" : "Registrar triagem"}
+        </Button>
       </div>
     </form>
   );

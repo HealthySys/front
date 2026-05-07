@@ -1,4 +1,7 @@
 import type { User } from "../../../types";
+import { Button } from "../../../components/ui/Button";
+import { InputField, SelectField } from "../../../components/ui/FormField";
+import patientStyles from "../../patients/components/PatientForm.module.css";
 
 export type UserFormState = {
   username: string;
@@ -7,7 +10,6 @@ export type UserFormState = {
   password: string;
   role: User["role"];
   active: boolean;
-  assinaturaDigital: string;
 };
 
 type UserFormProps = {
@@ -32,94 +34,79 @@ export function UserForm({
   roleLabel
 }: UserFormProps) {
   return (
-    <form className="form-grid" onSubmit={onSubmit}>
-      <label className="field">
-        <span>Usuário</span>
-        <input
-          value={form.username}
-          onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
-          placeholder="recepcao.centro"
-          required
-        />
-      </label>
+    <form className={patientStyles.formContainer} onSubmit={onSubmit}>
+      <div className={patientStyles.card}>
+        <div className={patientStyles.cardHeader}>
+          <div>
+            <h3 className={patientStyles.cardTitle}>Dados de acesso</h3>
+            <p className={patientStyles.cardDesc}>Identificação, contato e perfil de permissões.</p>
+          </div>
+        </div>
+        <div className={patientStyles.grid}>
+          <InputField
+            label="Usuário"
+            required
+            value={form.username}
+            placeholder="recepcao.centro"
+            onChange={(event) => setForm((c) => ({ ...c, username: event.target.value }))}
+          />
+          <InputField
+            label="Nome completo"
+            required
+            value={form.nome}
+            placeholder="Nome completo"
+            onChange={(event) => setForm((c) => ({ ...c, nome: event.target.value }))}
+          />
+          <InputField
+            label="E-mail"
+            type="email"
+            required
+            value={form.email}
+            placeholder="equipe@hospital.com"
+            onChange={(event) => setForm((c) => ({ ...c, email: event.target.value }))}
+          />
+          <InputField
+            label={isEditing ? "Nova senha (opcional)" : "Senha"}
+            type="password"
+            required={!isEditing}
+            value={form.password}
+            placeholder="8+ caracteres, maiúscula, número e símbolo"
+            pattern={/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.source}
+            onChange={(event) => setForm((c) => ({ ...c, password: event.target.value }))}
+          />
+          <SelectField
+            label="Perfil"
+            value={form.role}
+            onChange={(event) => setForm((c) => ({ ...c, role: event.target.value as User["role"] }))}
+          >
+            {roleOptions.map((role) => (
+              <option key={role} value={role}>
+                {roleLabel(role)}
+              </option>
+            ))}
+          </SelectField>
+          {isEditing ? (
+            <label className={patientStyles.switch}>
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={(event) => setForm((c) => ({ ...c, active: event.target.checked }))}
+              />
+              Usuário ativo
+            </label>
+          ) : null}
+        </div>
+      </div>
 
-      <label className="field">
-        <span>Nome completo</span>
-        <input
-          value={form.nome}
-          onChange={(event) => setForm((current) => ({ ...current, nome: event.target.value }))}
-          placeholder="Nome completo"
-          required
-        />
-      </label>
-
-      <label className="field">
-        <span>E-mail</span>
-        <input
-          value={form.email}
-          onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-          type="email"
-          placeholder="equipe@hospital.com"
-          required
-        />
-      </label>
-
-      <label className="field">
-        <span>{isEditing ? "Nova senha (opcional)" : "Senha"}</span>
-        <input
-          value={form.password}
-          onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-          type="password"
-          placeholder="Senha com 8+ caracteres, maiúsculas, números e símbolo"
-          pattern={/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/.source}
-          required={!isEditing}
-        />
-      </label>
-
-      <label className="field">
-        <span>Assinatura digital</span>
-        <input
-          value={form.assinaturaDigital}
-          onChange={(event) => setForm((current) => ({ ...current, assinaturaDigital: event.target.value }))}
-          placeholder="Obrigatória para prescrições controladas"
-        />
-      </label>
-
-      <label className="field">
-        <span>Perfil</span>
-        <select
-          value={form.role}
-          onChange={(event) =>
-            setForm((current) => ({ ...current, role: event.target.value as User["role"] }))
-          }
-        >
-          {roleOptions.map((role) => (
-            <option key={role} value={role}>
-              {roleLabel(role)}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="switch-field">
-        <input
-          checked={form.active}
-          onChange={(event) => setForm((current) => ({ ...current, active: event.target.checked }))}
-          type="checkbox"
-        />
-        <span>Usuário ativo</span>
-      </label>
-
-      <div className="form-actions">
-        <button type="submit" className="button" disabled={submitting}>
-          {submitting ? "Salvando..." : isEditing ? "Salvar alterações" : "Cadastrar usuário"}
-        </button>
-
+      <div className={patientStyles.formActions}>
         {onCancel ? (
-          <button type="button" className="button ghost" onClick={onCancel}>
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Cancelar
-          </button>
+          </Button>
         ) : null}
+        <Button type="submit" disabled={submitting}>
+          {submitting ? "Salvando…" : isEditing ? "Salvar alterações" : "Cadastrar usuário"}
+        </Button>
       </div>
     </form>
   );

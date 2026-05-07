@@ -1,15 +1,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { PageHeader } from "../../../components/ui/PageHeader";
 import { useToast } from "../../../components/feedback/ToastProvider";
 import { api } from "../../../services/api";
 import type { Patient, TriagePayload } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
-import {
-  initialTriageForm,
-  TriageForm,
-  type TriageFormState
-} from "../components/TriageForm";
+import { initialTriageForm, TriageForm, type TriageFormState } from "../components/TriageForm";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
 
 export function EditTriagePage() {
   const navigate = useNavigate();
@@ -23,13 +20,11 @@ export function EditTriagePage() {
   useEffect(() => {
     const loadPage = async () => {
       setLoading(true);
-
       try {
         const [patientsResponse, entry] = await Promise.all([
           api.listPatients(),
           api.getTriage(Number(id))
         ]);
-
         setPatients(patientsResponse);
         setForm({
           patientId: String(entry.patientId),
@@ -39,7 +34,9 @@ export function EditTriagePage() {
           observations: entry.observations,
           status: entry.status,
           alergiasReportadas: [],
-          vacinasReportadas: []
+          vacinasReportadas: [],
+          existingAllergies: [],
+          existingVaccines: []
         });
       } catch (loadError) {
         toast.error(normalizeError(loadError));
@@ -47,14 +44,12 @@ export function EditTriagePage() {
         setLoading(false);
       }
     };
-
     void loadPage();
   }, [id, toast]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitting(true);
-
     try {
       const selectedPatient = patients.find((patient) => patient.id === Number(form.patientId));
       const payload: TriagePayload = {
@@ -66,9 +61,8 @@ export function EditTriagePage() {
         observations: form.observations,
         status: form.status
       };
-
       await api.updateTriage(Number(id), payload);
-      toast.success("Triagem atualizada com sucesso!");
+      toast.success("Triagem atualizada com sucesso.");
       navigate("/app/triagem");
     } catch (submitError) {
       toast.error(normalizeError(submitError));
@@ -78,34 +72,25 @@ export function EditTriagePage() {
   };
 
   if (loading) {
-    return (
-      <div className="page-stack">
-        <article className="panel">
-          <div className="empty-state">Carregando dados da triagem...</div>
-        </article>
-      </div>
-    );
+    return <div className={dashboard.loader}>Carregando dados da triagem…</div>;
   }
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="TRIAGEM E PRIORIZAÇÃO"
+        eyebrow="Triagem"
         title="Editar triagem"
-        description="Ajuste a classificação, o status e os dados clínicos para manter o fluxo assistencial atualizado."
+        description="Ajuste a classificação, o status e os dados clínicos para manter o fluxo atualizado."
       />
-
-      <article className="panel">
-        <TriageForm
-          patients={patients}
-          form={form}
-          setForm={setForm}
-          submitting={submitting}
-          isEditing
-          onSubmit={handleSubmit}
-          onCancel={() => navigate("/app/triagem")}
-        />
-      </article>
+      <TriageForm
+        patients={patients}
+        form={form}
+        setForm={setForm}
+        submitting={submitting}
+        isEditing
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/app/triagem")}
+      />
     </div>
   );
 }

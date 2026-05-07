@@ -1,0 +1,27 @@
+.alert {
+  border-radius: var(--hs-radius-md);
+  padding: 12px 16px;
+  font-size: 13px;
+  border: 1px solid;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.error {
+  background: var(--hs-danger-bg);
+  color: var(--hs-danger);
+  border-color: var(--hs-danger-bd);
+}
+
+.success {
+  background: var(--hs-success-bg);
+  color: var(--hs-success);
+  border-color: var(--hs-success-bd);
+}
+
+.info {
+  background: var(--hs-accent-dim);
+  color: var(--hs-accent);
+  border-color: var(--hs-accent-light);
+}
