@@ -68,18 +68,6 @@ export function PatientsListPage() {
     void loadPatients();
   }, [deferredSearch, statusFilter]);
 
-  const handleDelete = async (patient: Patient) => {
-    if (!window.confirm(`Deseja excluir o cadastro de ${patient.nome}?`)) {
-      return;
-    }
-    try {
-      await api.deletePatient(patient.id);
-      await loadPatients();
-    } catch (deleteError) {
-      setError(normalizeError(deleteError));
-    }
-  };
-
   const handleForward = async (patient: Patient) => {
     setForwardingId(patient.id);
     try {
@@ -223,18 +211,13 @@ export function PatientsListPage() {
                           </Button>
                         ) : null}
                         {canManage ? (
-                          <>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => navigate(`/app/pacientes/${patient.id}/editar`)}
-                            >
-                              Editar
-                            </Button>
-                            <Button variant="danger" size="sm" onClick={() => void handleDelete(patient)}>
-                              Excluir
-                            </Button>
-                          </>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => navigate(`/app/pacientes/${patient.id}/editar`)}
+                          >
+                            Editar
+                          </Button>
                         ) : null}
                       </div>
                     </td>

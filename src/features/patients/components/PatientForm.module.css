@@ -108,6 +108,17 @@
   box-shadow: 0 0 0 3px rgba(15, 148, 144, 0.15);
 }
 
+.smallInput:disabled {
+  background: #eef2f7;
+  border-color: #d8dee8;
+  color: var(--hs-text-3);
+  cursor: not-allowed;
+}
+
+.smallInput:disabled::placeholder {
+  color: #b8c0cc;
+}
+
 .switch {
   display: flex;
   align-items: center;

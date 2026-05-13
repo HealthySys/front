@@ -177,12 +177,6 @@ export const api = {
     });
   },
 
-  deletePatient(id: number) {
-    return request<void>(`/api/patients/${id}`, {
-      method: "DELETE"
-    });
-  },
-
   listTriage() {
     return request<TriageEntry[]>("/api/triage");
   },

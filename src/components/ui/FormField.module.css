@@ -82,8 +82,14 @@
 }
 
 .input:disabled {
-  opacity: 0.6;
+  background: #eef2f7;
+  border-color: #d8dee8;
+  color: var(--hs-text-3);
   cursor: not-allowed;
+}
+
+.input:disabled::placeholder {
+  color: #b8c0cc;
 }
 
 .textarea {

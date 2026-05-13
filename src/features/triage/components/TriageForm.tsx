@@ -110,6 +110,7 @@ export function TriageForm({
 
   const hasExistingAllergies = form.existingAllergies.length > 0;
   const hasExistingVaccines = form.existingVaccines.length > 0;
+  const lockFields = !form.patientId;
 
   return (
     <form className={patientStyles.formContainer} onSubmit={onSubmit}>
@@ -131,6 +132,7 @@ export function TriageForm({
           <SelectField
             label="Classificação de risco"
             value={form.riskClassification}
+            disabled={lockFields}
             onChange={(event) =>
               setForm((c) => ({
                 ...c,
@@ -149,6 +151,7 @@ export function TriageForm({
             <SelectField
               label="Status"
               value={form.status}
+              disabled={lockFields}
               onChange={(event) =>
                 setForm((c) => ({ ...c, status: event.target.value as TriageEntry["status"] }))
               }
@@ -161,6 +164,11 @@ export function TriageForm({
             </SelectField>
           ) : null}
         </div>
+        {lockFields ? (
+          <p className={patientStyles.cardDesc} style={{ marginTop: 8 }}>
+            Selecione um paciente para liberar o preenchimento da triagem.
+          </p>
+        ) : null}
       </div>
 
       <div className={patientStyles.card}>
@@ -174,6 +182,7 @@ export function TriageForm({
           <TextAreaField
             label="Queixa principal"
             value={form.chiefComplaint}
+            disabled={lockFields}
             onChange={(event) => setForm((c) => ({ ...c, chiefComplaint: event.target.value }))}
             placeholder="Sintomas, sinais e motivo principal da procura"
             rows={3}
@@ -182,6 +191,7 @@ export function TriageForm({
           <TextAreaField
             label="Sinais vitais"
             value={form.vitalSigns}
+            disabled={lockFields}
             onChange={(event) => setForm((c) => ({ ...c, vitalSigns: event.target.value }))}
             placeholder="PA, FC, FR, SpO₂, temperatura e outros dados relevantes"
             rows={3}
@@ -190,6 +200,7 @@ export function TriageForm({
           <TextAreaField
             label="Observações adicionais"
             value={form.observations}
+            disabled={lockFields}
             onChange={(event) => setForm((c) => ({ ...c, observations: event.target.value }))}
             placeholder="Informações complementares para priorização e continuidade"
             rows={2}
@@ -269,7 +280,7 @@ export function TriageForm({
                   Adicione apenas alergias informadas nesta triagem. Itens já no prontuário não precisam ser repetidos.
                 </p>
               </div>
-              <Button type="button" variant="secondary" size="sm" onClick={addAllergy}>
+              <Button type="button" variant="secondary" size="sm" onClick={addAllergy} disabled={lockFields}>
                 + Adicionar alergia
               </Button>
             </div>
@@ -282,12 +293,14 @@ export function TriageForm({
                   <input
                     className={patientStyles.smallInput}
                     value={allergy.nomeAlergia}
+                    disabled={lockFields}
                     onChange={(e) => updateAllergy(index, { nomeAlergia: e.target.value })}
                     placeholder="Ex: Dipirona, Amendoim, Látex…"
                   />
                   <select
                     className={patientStyles.smallInput}
                     value={allergy.severidade}
+                    disabled={lockFields}
                     onChange={(e) => updateAllergy(index, { severidade: e.target.value as Severidade })}
                   >
                     {severityOptions.map((severity) => (
@@ -296,7 +309,7 @@ export function TriageForm({
                       </option>
                     ))}
                   </select>
-                  <Button type="button" variant="danger" size="sm" onClick={() => removeAllergy(index)}>
+                  <Button type="button" variant="danger" size="sm" onClick={() => removeAllergy(index)} disabled={lockFields}>
                     <Trash2 size={14} />
                   </Button>
                 </div>
@@ -312,7 +325,7 @@ export function TriageForm({
                   Imunizações informadas nesta triagem. Vacinas já no prontuário não precisam ser repetidas.
                 </p>
               </div>
-              <Button type="button" variant="secondary" size="sm" onClick={addVaccine}>
+              <Button type="button" variant="secondary" size="sm" onClick={addVaccine} disabled={lockFields}>
                 + Adicionar vacina
               </Button>
             </div>
@@ -325,6 +338,7 @@ export function TriageForm({
                   <input
                     className={patientStyles.smallInput}
                     value={vaccine.nomeVacina}
+                    disabled={lockFields}
                     onChange={(e) => updateVaccine(index, { nomeVacina: e.target.value })}
                     placeholder="Nome da vacina"
                   />
@@ -332,9 +346,10 @@ export function TriageForm({
                     className={patientStyles.smallInput}
                     type="date"
                     value={vaccine.dataAplicacao}
+                    disabled={lockFields}
                     onChange={(e) => updateVaccine(index, { dataAplicacao: e.target.value })}
                   />
-                  <Button type="button" variant="danger" size="sm" onClick={() => removeVaccine(index)}>
+                  <Button type="button" variant="danger" size="sm" onClick={() => removeVaccine(index)} disabled={lockFields}>
                     <Trash2 size={14} />
                   </Button>
                 </div>
@@ -350,7 +365,7 @@ export function TriageForm({
             Cancelar
           </Button>
         ) : null}
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting || lockFields}>
           {submitting ? "Salvando…" : isEditing ? "Salvar alterações" : "Registrar triagem"}
         </Button>
       </div>
