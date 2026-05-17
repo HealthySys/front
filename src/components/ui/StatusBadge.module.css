@@ -1,0 +1,22 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--hs-radius-full);
+  border: 1px solid;
+  font-size: var(--hs-fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.active {
+  background: var(--hs-success-bg);
+  color: var(--hs-success);
+  border-color: var(--hs-success-bd);
+}
+
+.inactive {
+  background: #f1f5f9;
+  color: var(--hs-text-3);
+  border-color: var(--hs-border);
+}

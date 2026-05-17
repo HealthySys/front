@@ -1,36 +1,30 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { useToast } from "../../../components/feedback/ToastProvider";
 import { api } from "../../../services/api";
 import type { Patient, TriagePayload } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
-import {
-  initialTriageForm,
-  TriageForm,
-  type TriageFormState
-} from "../components/TriageForm";
+import { initialTriageForm, TriageForm, type TriageFormState } from "../components/TriageForm";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
 
 export function EditTriagePage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { id } = useParams();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [form, setForm] = useState<TriageFormState>(initialTriageForm);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadPage = async () => {
       setLoading(true);
-      setError("");
-
       try {
         const [patientsResponse, entry] = await Promise.all([
           api.listPatients(),
           api.getTriage(Number(id))
         ]);
-
         setPatients(patientsResponse);
         setForm({
           patientId: String(entry.patientId),
@@ -38,26 +32,24 @@ export function EditTriagePage() {
           chiefComplaint: entry.chiefComplaint,
           vitalSigns: entry.vitalSigns,
           observations: entry.observations,
-          nurseId: entry.nurseId,
-          nurseName: entry.nurseName,
-          status: entry.status
+          status: entry.status,
+          alergiasReportadas: [],
+          vacinasReportadas: [],
+          existingAllergies: [],
+          existingVaccines: []
         });
       } catch (loadError) {
-        setError(normalizeError(loadError));
+        toast.error(normalizeError(loadError));
       } finally {
         setLoading(false);
       }
     };
-
     void loadPage();
-  }, [id]);
+  }, [id, toast]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitting(true);
-    setFeedback("");
-    setError("");
-
     try {
       const selectedPatient = patients.find((patient) => patient.id === Number(form.patientId));
       const payload: TriagePayload = {
@@ -67,53 +59,38 @@ export function EditTriagePage() {
         chiefComplaint: form.chiefComplaint,
         vitalSigns: form.vitalSigns,
         observations: form.observations,
-        nurseId: form.nurseId,
-        nurseName: form.nurseName,
         status: form.status
       };
-
       await api.updateTriage(Number(id), payload);
-      setFeedback("Triagem atualizada com sucesso.");
-      setTimeout(() => navigate("/app/triagem"), 800);
+      toast.success("Triagem atualizada com sucesso.");
+      navigate("/app/triagem");
     } catch (submitError) {
-      setError(normalizeError(submitError));
+      toast.error(normalizeError(submitError));
     } finally {
       setSubmitting(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="page-stack">
-        <article className="panel">
-          <div className="empty-state">Carregando dados da triagem...</div>
-        </article>
-      </div>
-    );
+    return <div className={dashboard.loader}>Carregando dados da triagem…</div>;
   }
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="TRIAGEM E PRIORIZAÇÃO"
+        eyebrow="Triagem"
         title="Editar triagem"
-        description="Ajuste a classificação, o status e os dados clínicos para manter o fluxo assistencial atualizado."
+        description="Ajuste a classificação, o status e os dados clínicos para manter o fluxo atualizado."
       />
-
-      {feedback ? <div className="alert success">{feedback}</div> : null}
-      {error ? <div className="alert error">{error}</div> : null}
-
-      <article className="panel">
-        <TriageForm
-          patients={patients}
-          form={form}
-          setForm={setForm}
-          submitting={submitting}
-          isEditing
-          onSubmit={handleSubmit}
-          onCancel={() => navigate("/app/triagem")}
-        />
-      </article>
+      <TriageForm
+        patients={patients}
+        form={form}
+        setForm={setForm}
+        submitting={submitting}
+        isEditing
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/app/triagem")}
+      />
     </div>
   );
 }

@@ -1,9 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { CheckCircle2, Clock, FileText, Plus, RefreshCw, Search } from "lucide-react";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { StatCard } from "../../../components/ui/StatCard";
+import { Button } from "../../../components/ui/Button";
+import { Alert } from "../../../components/ui/Alert";
+import { Colors } from "../../../design/tokens";
 import { api } from "../../../services/api";
 import type { MedicalRecord } from "../../../types";
-import { formatDateTime, normalizeError } from "../../../utils/formatters";
+import { normalizeError } from "../../../utils/formatters";
+import { RecordAccordion } from "../components/RecordAccordion";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
+import toolbar from "../../../components/ui/Toolbar.module.css";
+
+function isToday(value?: string) {
+  if (!value) return false;
+  const date = new Date(value);
+  const now = new Date();
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  );
+}
 
 export function RecordsListPage() {
   const navigate = useNavigate();
@@ -11,12 +30,10 @@ export function RecordsListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [doctorFilter, setDoctorFilter] = useState("");
 
   const loadRecords = async () => {
     setLoading(true);
     setError("");
-
     try {
       const response = await api.listRecords();
       setRecords(response);
@@ -32,10 +49,7 @@ export function RecordsListPage() {
   }, []);
 
   const handleDelete = async (record: MedicalRecord) => {
-    if (!window.confirm(`Deseja excluir o prontuário de ${record.patientName}?`)) {
-      return;
-    }
-
+    if (!window.confirm(`Deseja excluir o prontuário de ${record.patientName}?`)) return;
     try {
       await api.deleteRecord(record.id);
       await loadRecords();
@@ -45,149 +59,92 @@ export function RecordsListPage() {
   };
 
   const filteredRecords = useMemo(() => {
-    return records.filter((record) => {
-      const matchesSearch =
-        searchTerm.trim() === "" ||
-        record.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (record.diagnosis ?? "").toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return records;
+    return records.filter(
+      (record) =>
+        record.patientName.toLowerCase().includes(term) ||
+        (record.diagnosis ?? "").toLowerCase().includes(term) ||
+        (record.responsibleDoctorName ?? "").toLowerCase().includes(term)
+    );
+  }, [records, searchTerm]);
 
-      const matchesDoctor =
-        doctorFilter.trim() === "" ||
-        (record.responsibleDoctorName ?? "").toLowerCase().includes(doctorFilter.toLowerCase());
-
-      return matchesSearch && matchesDoctor;
-    });
-  }, [records, searchTerm, doctorFilter]);
+  const totalFinalizados = records.filter((r) => Boolean(r.diagnosis?.trim())).length;
+  const totalEmAndamento = records.length - totalFinalizados;
+  const finalizadosHoje = records.filter(
+    (r) => Boolean(r.diagnosis?.trim()) && isToday(r.updatedAt || r.createdAt)
+  ).length;
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="REGISTRO CLÍNICO"
+        eyebrow="Registro clínico"
         title="Prontuários eletrônicos"
+        description="Histórico clínico distribuído de cada paciente, incluindo evoluções da triagem e atendimento."
         actions={
-          <div className="page-actions">
-            <button type="button" className="button secondary" onClick={() => void loadRecords()}>
-              Atualizar lista
-            </button>
-            <button type="button" className="button" onClick={() => navigate("/app/prontuarios/novo")}>
+          <>
+            <Button variant="secondary" onClick={() => void loadRecords()}>
+              <RefreshCw size={14} />
+              Atualizar
+            </Button>
+            <Button onClick={() => navigate("/app/prontuarios/novo")}>
+              <Plus size={14} />
               Novo prontuário
-            </button>
-          </div>
+            </Button>
+          </>
         }
       />
 
-      {error ? <div className="alert error">{error}</div> : null}
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <div className="patients-overview-grid">
-        <div className="overview-card">
-          <span className="overview-label">Prontuários exibidos</span>
-          <strong className="overview-value">{filteredRecords.length}</strong>
-        </div>
+      <section className={dashboard.statsGrid3}>
+        <StatCard
+          label="Total de registros"
+          value={records.length}
+          subtitle="Prontuários cadastrados"
+          color={Colors.accent}
+          icon={<FileText size={18} />}
+        />
+        <StatCard
+          label="Em andamento"
+          value={totalEmAndamento}
+          subtitle="Sem diagnóstico fechado"
+          color={Colors.warning}
+          icon={<Clock size={18} />}
+        />
+        <StatCard
+          label="Finalizados hoje"
+          value={finalizadosHoje}
+          subtitle="Concluídos nas últimas 24h"
+          color={Colors.success}
+          icon={<CheckCircle2 size={18} />}
+        />
+      </section>
 
-        <div className="overview-card">
-          <span className="overview-label">Total cadastrado</span>
-          <strong className="overview-value">{records.length}</strong>
+      <div className={toolbar.toolbar}>
+        <div className={toolbar.search}>
+          <Search size={16} className={toolbar.searchIcon} />
+          <input
+            className={toolbar.searchInput}
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Buscar por paciente, diagnóstico ou responsável…"
+          />
         </div>
       </div>
 
-      <article className="panel">
-        <div className="panel-head">
-          <div>
-            <p className="panel-kicker">FILTROS</p>
-          </div>
-        </div>
-
-        <div className="filters-row">
-          <label className="field">
-            <span>Buscar por paciente ou diagnóstico</span>
-            <input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Digite nome do paciente ou diagnóstico"
-            />
-          </label>
-
-          <label className="field">
-            <span>Filtrar por responsável</span>
-            <input
-              value={doctorFilter}
-              onChange={(event) => setDoctorFilter(event.target.value)}
-              placeholder="Nome do médico responsável"
-            />
-          </label>
-        </div>
-      </article>
-
-      <article className="panel">
-        <div className="panel-head">
-          <div>
-            <p className="panel-kicker">LISTA CLÍNICA</p>
-            <h2>Prontuários cadastrados</h2>
-          </div>
-        </div>
-
-        <div className="table-wrapper">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Paciente</th>
-                <th>Responsável</th>
-                <th>Última atualização</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={4}>Carregando prontuários...</td>
-                </tr>
-              ) : filteredRecords.length ? (
-                filteredRecords.map((record) => (
-                  <tr key={record.id}>
-                    <td>
-                      <strong>{record.patientName}</strong>
-                      <small>{record.diagnosis || "Sem diagnóstico informado"}</small>
-                    </td>
-                    <td>{record.responsibleDoctorName || "Não informado"}</td>
-                    <td>{formatDateTime(record.updatedAt || record.createdAt)}</td>
-                    <td>
-                      <div className="table-actions">
-                        <button
-                          type="button"
-                          className="button ghost small"
-                          onClick={() => navigate(`/app/prontuarios/${record.id}`)}
-                        >
-                          Ver
-                        </button>
-
-                        <button
-                          type="button"
-                          className="button ghost small"
-                          onClick={() => navigate(`/app/prontuarios/${record.id}/editar`)}
-                        >
-                          Editar
-                        </button>
-
-                        <button
-                          type="button"
-                          className="button ghost small"
-                          onClick={() => void handleDelete(record)}
-                        >
-                          Excluir
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4}>Nenhum prontuário encontrado com os filtros atuais.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </article>
+      {loading ? (
+        <div className={dashboard.empty}>Carregando prontuários…</div>
+      ) : filteredRecords.length ? (
+        <RecordAccordion
+          records={filteredRecords}
+          onView={(record) => navigate(`/app/prontuarios/${record.id}`)}
+          onEdit={(record) => navigate(`/app/prontuarios/${record.id}/editar`)}
+          onDelete={(record) => void handleDelete(record)}
+        />
+      ) : (
+        <div className={dashboard.empty}>Nenhum prontuário encontrado com os filtros atuais.</div>
+      )}
     </div>
   );
 }

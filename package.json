@@ -9,6 +9,7 @@
     "preview": "vite preview --host 0.0.0.0 --port 4173"
   },
   "dependencies": {
+    "@fontsource/plus-jakarta-sans": "^5.1.0",
     "@stomp/stompjs": "^7.1.1",
     "lucide-react": "^1.8.0",
     "react": "^18.2.0",

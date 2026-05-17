@@ -1,0 +1,44 @@
+.card {
+  background: var(--hs-surface);
+  border: 1px solid var(--hs-border);
+  border-left-width: 4px;
+  border-radius: var(--hs-radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardCompact {
+  padding: 12px 14px;
+  gap: 4px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.name {
+  font-size: var(--hs-fs-md);
+  font-weight: 700;
+  color: var(--hs-text);
+}
+
+.meta {
+  font-size: var(--hs-fs-sm);
+  color: var(--hs-text-2);
+}
+
+.subMeta {
+  font-size: var(--hs-fs-xs);
+  color: var(--hs-text-3);
+}
+
+.complaint {
+  font-size: 13px;
+  color: var(--hs-text-2);
+  line-height: 1.5;
+}

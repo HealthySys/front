@@ -1,23 +1,39 @@
 import { useDeferredValue, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { Activity, AlertTriangle, ClipboardList, Plus, RefreshCw, Search, Users } from "lucide-react";
+import { useAuth } from "../../../auth/AuthProvider";
+import { canWrite } from "../../../config/permissions";
+import { useToast } from "../../../components/feedback/ToastProvider";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { StatCard } from "../../../components/ui/StatCard";
+import { Button } from "../../../components/ui/Button";
+import { RiskBadge } from "../../../components/ui/RiskBadge";
+import { Alert } from "../../../components/ui/Alert";
+import { Colors } from "../../../design/tokens";
 import { api } from "../../../services/api";
+import { healthSysWebSocket } from "../../../services/websocket";
 import type { TriageEntry } from "../../../types";
 import {
   formatDateTime,
   normalizeError,
   riskLabel,
   riskOptions,
-  riskSla,
   statusLabel,
   triageStatusOptions
 } from "../../../utils/formatters";
+import { ManchesterLegend } from "../components/ManchesterLegend";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
+import table from "../../../components/ui/DataTable.module.css";
+import toolbar from "../../../components/ui/Toolbar.module.css";
 
 type StatusFilter = "todos" | TriageEntry["status"];
 type RiskFilter = "todos" | TriageEntry["riskClassification"];
 
 export function TriageListPage() {
   const navigate = useNavigate();
+  const toast = useToast();
+  const { user } = useAuth();
+  const canManage = canWrite(user?.role, "triagem");
   const [entries, setEntries] = useState<TriageEntry[]>([]);
   const [queue, setQueue] = useState<TriageEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,13 +46,8 @@ export function TriageListPage() {
   const loadTriage = async () => {
     setLoading(true);
     setError("");
-
     try {
-      const [triageResponse, queueResponse] = await Promise.all([
-        api.listTriage(),
-        api.listTriageQueue()
-      ]);
-
+      const [triageResponse, queueResponse] = await Promise.all([api.listTriage(), api.listTriageQueue()]);
       setEntries(triageResponse);
       setQueue(queueResponse);
     } catch (loadError) {
@@ -50,18 +61,19 @@ export function TriageListPage() {
     void loadTriage();
   }, []);
 
-  const handleDelete = async (entry: TriageEntry) => {
-    if (!window.confirm(`Deseja remover a triagem de ${entry.patientName}?`)) {
-      return;
-    }
-
-    try {
-      await api.deleteTriage(entry.id);
-      await loadTriage();
-    } catch (deleteError) {
-      setError(normalizeError(deleteError));
-    }
-  };
+  useEffect(() => {
+    const subscription = healthSysWebSocket.onNotification((notification) => {
+      if (notification.type !== "ATTENDANCE_STARTED" || !notification.triageId) return;
+      const targetId = notification.triageId;
+      setQueue((current) => current.filter((entry) => entry.id !== targetId));
+      setEntries((current) =>
+        current.map((entry) =>
+          entry.id === targetId ? { ...entry, status: "EM_ATENDIMENTO" } : entry
+        )
+      );
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleStatusChange = async (entry: TriageEntry, nextStatus: TriageEntry["status"]) => {
     try {
@@ -72,13 +84,20 @@ export function TriageListPage() {
     }
   };
 
+  const handleDelete = async (entry: TriageEntry) => {
+    if (!window.confirm(`Deseja remover a triagem de ${entry.patientName}?`)) return;
+    try {
+      await api.deleteTriage(entry.id);
+      await loadTriage();
+    } catch (deleteError) {
+      setError(normalizeError(deleteError));
+    }
+  };
+
   const filteredEntries = entries.filter((entry) => {
     const matchesSearch =
       !deferredSearch ||
-      [entry.patientName, entry.chiefComplaint, entry.nurseName, entry.nurseId]
-        .join(" ")
-        .toLowerCase()
-        .includes(deferredSearch);
+      [entry.patientName, entry.chiefComplaint, entry.nurseName].join(" ").toLowerCase().includes(deferredSearch);
 
     const matchesStatus = statusFilter === "todos" || entry.status === statusFilter;
     const matchesRisk = riskFilter === "todos" || entry.riskClassification === riskFilter;
@@ -91,219 +110,194 @@ export function TriageListPage() {
   ).length;
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="TRIAGEM E PRIORIZAÇÃO"
+        eyebrow="Triagem e priorização"
         title="Gestão de triagem"
+        description="Fila ordenada por risco, com acompanhamento por classificação e status."
         actions={
-          <div className="page-actions">
-            <button type="button" className="button secondary" onClick={() => void loadTriage()}>
-              Atualizar fila
-            </button>
-            <button type="button" className="button" onClick={() => navigate("/app/triagem/nova")}>
-              Nova triagem
-            </button>
-          </div>
+          <>
+            <Button variant="secondary" onClick={() => void loadTriage()}>
+              <RefreshCw size={14} />
+              Atualizar
+            </Button>
+            {canManage ? (
+              <Button onClick={() => navigate("/app/triagem/nova")}>
+                <Plus size={14} />
+                Nova triagem
+              </Button>
+            ) : null}
+          </>
         }
       />
 
-      {error ? <div className="alert error">{error}</div> : null}
+      {error ? <Alert variant="error">{error}</Alert> : null}
 
-      <article>
-        <div className="triage-overview-grid">
-          <div className="overview-card">
-            <span className="overview-label">Triagens registradas</span>
-            <strong className="overview-value">{entries.length}</strong>
-          </div>
+      <ManchesterLegend />
 
-          <div className="overview-card">
-            <span className="overview-label">Na fila</span>
-            <strong className="overview-value">{queue.length}</strong>
-          </div>
+      <section className={dashboard.statsGrid}>
+        <StatCard
+          label="Triagens registradas"
+          value={entries.length}
+          subtitle="Total acumulado"
+          color={Colors.accent}
+          icon={<ClipboardList size={18} />}
+        />
+        <StatCard
+          label="Na fila"
+          value={queue.length}
+          subtitle="Aguardando médico"
+          color={Colors.warning}
+          icon={<Users size={18} />}
+        />
+        <StatCard
+          label="Em atendimento"
+          value={entries.filter((entry) => entry.status === "EM_ATENDIMENTO").length}
+          subtitle="Em consulta agora"
+          color={Colors.success}
+          icon={<Activity size={18} />}
+        />
+        <StatCard
+          label="Casos críticos"
+          value={criticalQueueCount}
+          subtitle="Vermelho ou Laranja"
+          color={Colors.danger}
+          icon={<AlertTriangle size={18} />}
+        />
+      </section>
 
-          <div className="overview-card">
-            <span className="overview-label">Em atendimento</span>
-            <strong className="overview-value">
-              {entries.filter((entry) => entry.status === "EM_ATENDIMENTO").length}
-            </strong>
-          </div>
 
-          <div className="overview-card">
-            <span className="overview-label">Casos críticos</span>
-            <strong className="overview-value">{criticalQueueCount}</strong>
-          </div>
-        </div>
-      </article>
-
-      <article className="panel">
-        <div className="panel-head">
+      <article className={dashboard.section}>
+        <header className={dashboard.sectionHead}>
           <div>
-            <p className="panel-kicker">FILTROS E CONTEXTO</p>
+            <p className={dashboard.kicker}>Histórico</p>
+            <h2 className={dashboard.sectionTitle}>Entradas registradas</h2>
           </div>
-        </div>
+        </header>
 
-        <div className="stack-form">
-          <div className="triage-filters-grid">
-            <label className="field">
-              <span>Buscar triagem</span>
-              <input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Paciente, queixa ou profissional"
-              />
-            </label>
-
-            <label className="field">
-              <span>Status</span>
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-              >
-                <option value="todos">Todos os status</option>
-                {triageStatusOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {statusLabel(status)}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="field">
-              <span>Prioridade</span>
-              <select
-                value={riskFilter}
-                onChange={(event) => setRiskFilter(event.target.value as RiskFilter)}
-              >
-                <option value="todos">Todos os níveis</option>
-                {riskOptions.map((risk) => (
-                  <option key={risk} value={risk}>
-                    {riskLabel(risk)}
-                  </option>
-                ))}
-              </select>
-            </label>
+        <div className={toolbar.toolbar} style={{ padding: 0, border: "none", boxShadow: "none" }}>
+          <div className={toolbar.search}>
+            <Search size={16} className={toolbar.searchIcon} />
+            <input
+              className={toolbar.searchInput}
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Buscar por paciente, queixa ou profissional…"
+            />
           </div>
-
-          <div className="info-panel">
-            A fila segue o protocolo de Manchester. Os tempos de resposta esperados variam
-            conforme a cor de risco e podem ser acompanhados na própria listagem.
-          </div>
-        </div>
-      </article>
-
-      <article className="panel">
-        <div className="panel-head">
-          <div>
-            <p className="panel-kicker">FILA PRIORITÁRIA</p>
-            <h2>Casos aguardando</h2>
-          </div>
-        </div>
-
-        {queue.length ? (
-          <div className="list-stack">
-            {queue.map((entry) => (
-              <div key={entry.id} className="list-card">
-                <div className="list-card-top">
-                  <strong>{entry.patientName}</strong>
-                  <span className={`pill risk ${entry.riskClassification.toLowerCase()}`}>
-                    {riskLabel(entry.riskClassification)}
-                  </span>
-                </div>
-                <p>{entry.chiefComplaint || "Sem queixa detalhada."}</p>
-                <small>{riskSla(entry.riskClassification)}</small>
-              </div>
+          <select
+            className={toolbar.select}
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+          >
+            <option value="todos">Todos os status</option>
+            {triageStatusOptions.map((status) => (
+              <option key={status} value={status}>
+                {statusLabel(status)}
+              </option>
             ))}
-          </div>
-        ) : loading ? (
-          <div className="empty-state">Carregando fila de triagem...</div>
-        ) : (
-          <div className="empty-state">Nenhum paciente aguardando na fila no momento.</div>
-        )}
-      </article>
-
-      <article className="panel">
-        <div className="panel-head">
-          <div>
-            <p className="panel-kicker">HISTÓRICO DA TRIAGEM</p>
-            <h2>Entradas registradas</h2>
-          </div>
+          </select>
+          <select
+            className={toolbar.select}
+            value={riskFilter}
+            onChange={(event) => setRiskFilter(event.target.value as RiskFilter)}
+          >
+            <option value="todos">Todos os níveis</option>
+            {riskOptions.map((risk) => (
+              <option key={risk} value={risk}>
+                {riskLabel(risk)}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="table-wrapper">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Paciente</th>
-                <th>Risco</th>
-                <th>Status</th>
-                <th>Profissional</th>
-                <th>Registro</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
+        <div className={table.wrapper}>
+          <div className={table.scroll}>
+            <table className={table.table}>
+              <thead>
                 <tr>
-                  <td colSpan={6}>Carregando triagens...</td>
+                  <th>Paciente</th>
+                  <th>Risco</th>
+                  <th>Status</th>
+                  <th>Profissional</th>
+                  <th>Registro</th>
+                  <th style={{ textAlign: "right" }}>Ações</th>
                 </tr>
-              ) : filteredEntries.length ? (
-                filteredEntries.map((entry) => (
-                  <tr key={entry.id}>
-                    <td>
-                      <strong>{entry.patientName}</strong>
-                      <small>{entry.chiefComplaint || "Sem queixa informada"}</small>
-                    </td>
-                    <td>
-                      <span className={`pill risk ${entry.riskClassification.toLowerCase()}`}>
-                        {riskLabel(entry.riskClassification)}
-                      </span>
-                    </td>
-                    <td>
-                      <select
-                        value={entry.status}
-                        onChange={(event) =>
-                          void handleStatusChange(entry, event.target.value as TriageEntry["status"])
-                        }
-                      >
-                        {triageStatusOptions.map((status) => (
-                          <option key={status} value={status}>
-                            {statusLabel(status)}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <strong>{entry.nurseName || "Não informado"}</strong>
-                      <small>{entry.nurseId || "Sem identificação"}</small>
-                    </td>
-                    <td>{formatDateTime(entry.triageDate)}</td>
-                    <td>
-                      <div className="table-actions">
-                        <button
-                          type="button"
-                          className="button ghost small"
-                          onClick={() => navigate(`/app/triagem/${entry.id}/editar`)}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          className="button ghost small"
-                          onClick={() => void handleDelete(entry)}
-                        >
-                          Excluir
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className={table.empty}>
+                      Carregando triagens…
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6}>Nenhuma triagem encontrada com os filtros atuais.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ) : filteredEntries.length ? (
+                  filteredEntries.map((entry) => (
+                    <tr key={entry.id}>
+                      <td>
+                        <div className={table.cellTwoLines}>
+                          <strong>{entry.patientName}</strong>
+                          <small>{entry.chiefComplaint || "Sem queixa informada"}</small>
+                        </div>
+                      </td>
+                      <td>
+                        <RiskBadge risk={entry.riskClassification} />
+                      </td>
+                      <td>
+                        {canManage ? (
+                          <select
+                            className={toolbar.select}
+                            style={{ minWidth: 0, padding: "6px 8px", fontSize: 12 }}
+                            value={entry.status}
+                            onChange={(event) =>
+                              void handleStatusChange(entry, event.target.value as TriageEntry["status"])
+                            }
+                          >
+                            {triageStatusOptions.map((status) => (
+                              <option key={status} value={status}>
+                                {statusLabel(status)}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span>{statusLabel(entry.status)}</span>
+                        )}
+                      </td>
+                      <td>
+                        <div className={table.cellTwoLines}>
+                          <strong>{entry.nurseName || "Não informado"}</strong>
+                          <small>ID {entry.nurseId || "—"}</small>
+                        </div>
+                      </td>
+                      <td>{formatDateTime(entry.triageDate)}</td>
+                      <td>
+                        {canManage ? (
+                          <div className={table.actions} style={{ justifyContent: "flex-end" }}>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => navigate(`/app/triagem/${entry.id}/editar`)}
+                            >
+                              Editar
+                            </Button>
+                            <Button variant="danger" size="sm" onClick={() => void handleDelete(entry)}>
+                              Excluir
+                            </Button>
+                          </div>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className={table.empty}>
+                      Nenhuma triagem encontrada com os filtros atuais.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </article>
     </div>

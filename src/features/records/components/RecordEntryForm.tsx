@@ -1,6 +1,9 @@
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import type { MedicalRecord, RecordEntry } from "../../../types";
 import { recordEntryTypeOptions } from "../../../utils/formatters";
+import { Button } from "../../../components/ui/Button";
+import { InputField, SelectField, TextAreaField } from "../../../components/ui/FormField";
+import patientStyles from "../../patients/components/PatientForm.module.css";
 
 type RecordEntryFormProps = {
   records: MedicalRecord[];
@@ -22,76 +25,66 @@ export function RecordEntryForm({
   onSubmit
 }: RecordEntryFormProps) {
   return (
-    <form className="form-grid" onSubmit={onSubmit}>
-      <label className="field">
-        <span>Prontuário selecionado</span>
-        <select
-          value={selectedRecordId || ""}
-          onChange={(event) => setSelectedRecordId(event.target.value || null)}
-        >
-          <option value="">Selecione um prontuário</option>
-          {records.map((record) => (
-            <option key={record.id} value={record.id}>
-              {record.patientName} • {record.responsibleDoctorName || "Sem responsável"}
-            </option>
-          ))}
-        </select>
-      </label>
+    <form className={patientStyles.formContainer} onSubmit={onSubmit}>
+      <div className={patientStyles.card}>
+        <div className={patientStyles.cardHeader}>
+          <div>
+            <h3 className={patientStyles.cardTitle}>Nova evolução</h3>
+            <p className={patientStyles.cardDesc}>Adicione um item ao histórico do prontuário selecionado.</p>
+          </div>
+        </div>
+        <div className={patientStyles.grid}>
+          <SelectField
+            label="Prontuário"
+            required
+            value={selectedRecordId || ""}
+            onChange={(event) => setSelectedRecordId(event.target.value || null)}
+          >
+            <option value="">Selecione um prontuário</option>
+            {records.map((record) => (
+              <option key={record.id} value={record.id}>
+                {record.patientName} · {record.responsibleDoctorName || "Sem responsável"}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField
+            label="Tipo de entrada"
+            value={entryForm.type}
+            onChange={(event) => setEntryForm((c) => ({ ...c, type: event.target.value }))}
+          >
+            {recordEntryTypeOptions.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </SelectField>
+          <InputField
+            label="ID do profissional"
+            placeholder="MED-01"
+            value={entryForm.doctorId}
+            onChange={(event) => setEntryForm((c) => ({ ...c, doctorId: event.target.value }))}
+          />
+          <InputField
+            label="Nome do profissional"
+            placeholder="Responsável pela evolução"
+            value={entryForm.doctorName}
+            onChange={(event) => setEntryForm((c) => ({ ...c, doctorName: event.target.value }))}
+          />
+          <TextAreaField
+            label="Descrição"
+            placeholder="Descreva a evolução, exame ou procedimento"
+            value={entryForm.description}
+            rows={4}
+            onChange={(event) => setEntryForm((c) => ({ ...c, description: event.target.value }))}
+            span2
+          />
+        </div>
+      </div>
 
-      <label className="field">
-        <span>Tipo de entrada</span>
-        <select
-          value={entryForm.type}
-          onChange={(event) =>
-            setEntryForm((current) => ({ ...current, type: event.target.value }))
-          }
-        >
-          {recordEntryTypeOptions.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="field field-span-2">
-        <span>Descrição</span>
-        <textarea
-          value={entryForm.description}
-          onChange={(event) =>
-            setEntryForm((current) => ({ ...current, description: event.target.value }))
-          }
-          rows={4}
-          placeholder="Descreva a evolução, exame ou procedimento"
-        />
-      </label>
-
-      <label className="field">
-        <span>ID do profissional</span>
-        <input
-          value={entryForm.doctorId}
-          onChange={(event) =>
-            setEntryForm((current) => ({ ...current, doctorId: event.target.value }))
-          }
-          placeholder="MED-01"
-        />
-      </label>
-
-      <label className="field">
-        <span>Nome do profissional</span>
-        <input
-          value={entryForm.doctorName}
-          onChange={(event) =>
-            setEntryForm((current) => ({ ...current, doctorName: event.target.value }))
-          }
-          placeholder="Responsável pela evolução"
-        />
-      </label>
-
-      <div className="form-actions field-span-2">
-        <button type="submit" className="button" disabled={submitting || !selectedRecordId}>
-          {submitting ? "Salvando..." : "Adicionar evolução"}
-        </button>
+      <div className={patientStyles.formActions}>
+        <Button type="submit" disabled={submitting || !selectedRecordId}>
+          {submitting ? "Salvando…" : "Adicionar evolução"}
+        </Button>
       </div>
     </form>
   );

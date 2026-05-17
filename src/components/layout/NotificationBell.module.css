@@ -1,0 +1,105 @@
+.wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--hs-radius-sm);
+  border: 1px solid var(--hs-border);
+  background: var(--hs-surface);
+  color: var(--hs-text-2);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.trigger:hover {
+  background: var(--hs-surface-2);
+  color: var(--hs-text);
+  border-color: var(--hs-text-3);
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--hs-radius-full);
+  background: var(--hs-danger);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--hs-surface);
+  line-height: 1;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  background: var(--hs-surface);
+  border: 1px solid var(--hs-border);
+  border-radius: var(--hs-radius-lg);
+  box-shadow: var(--hs-shadow-md);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--hs-border);
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--hs-text);
+}
+
+.markAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--hs-accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--hs-radius-sm);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.markAll:hover:not(:disabled) {
+  background: var(--hs-accent-dim);
+}
+
+.markAll:disabled {
+  color: var(--hs-text-3);
+  cursor: not-allowed;
+}
+
+.body {
+  max-height: 440px;
+  overflow-y: auto;
+  padding: 12px;
+}

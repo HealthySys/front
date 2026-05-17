@@ -1,14 +1,17 @@
 import type {
+  AtendimentoPayload,
   AuthResponse,
   BootstrapStatus,
   CreateUserPayload,
+  ExamPayload,
+  ExamResultPayload,
   LoginPayload,
   MedicalRecord,
   MedicalRecordPayload,
   Notification,
-  NotificationPayload,
   Patient,
   PatientPayload,
+  PrescriptionPayload,
   RecordEntry,
   TriageEntry,
   TriagePayload,
@@ -69,6 +72,21 @@ export const api = {
     });
   },
 
+  refreshToken(refreshToken: string) {
+    return request<AuthResponse>("/api/auth/refresh", {
+      method: "POST",
+      body: JSON.stringify({ refreshToken }),
+      skipAuth: true
+    });
+  },
+
+  logout(refreshToken: string) {
+    return request<void>("/api/auth/logout", {
+      method: "POST",
+      body: JSON.stringify({ refreshToken })
+    });
+  },
+
   register(payload: CreateUserPayload) {
     return request<User>("/api/auth/register", {
       method: "POST",
@@ -123,8 +141,20 @@ export const api = {
     return request<Patient[]>(`/api/patients${suffix}`);
   },
 
+  getCurrentPatient() {
+    return request<Patient>("/api/patients/me");
+  },
+
+  getPatient(id: number) {
+    return request<Patient>(`/api/patients/${id}`);
+  },
+
   searchPatients(name: string) {
     return request<Patient[]>(`/api/patients/search?nome=${encodeURIComponent(name)}`);
+  },
+
+  searchPatientByCpf(cpf: string) {
+    return request<Patient>(`/api/patients/cpf/${encodeURIComponent(cpf)}`);
   },
 
   createPatient(payload: PatientPayload) {
@@ -144,12 +174,6 @@ export const api = {
   updatePatientStatus(id: number, active: boolean) {
     return request<Patient>(`/api/patients/${id}/status?ativo=${active}`, {
       method: "PATCH"
-    });
-  },
-
-  deletePatient(id: number) {
-    return request<void>(`/api/patients/${id}`, {
-      method: "DELETE"
     });
   },
 
@@ -191,8 +215,19 @@ export const api = {
     });
   },
 
-  listRecords() {
-    return request<MedicalRecord[]>("/api/records");
+  forwardPatientToTriage(patientId: number) {
+    return request<void>(`/api/triage/encaminhar/${patientId}`, {
+      method: "POST"
+    });
+  },
+
+  listRecords(patientId?: number | string) {
+    const suffix = patientId !== undefined ? `?patientId=${encodeURIComponent(String(patientId))}` : "";
+    return request<MedicalRecord[]>(`/api/records${suffix}`);
+  },
+
+  getMyRecord(patientId: number | string) {
+    return request<MedicalRecord[]>(`/api/records?patientId=${encodeURIComponent(String(patientId))}`);
   },
 
   createRecord(payload: MedicalRecordPayload) {
@@ -216,6 +251,34 @@ export const api = {
     });
   },
 
+  addPrescription(id: string, payload: PrescriptionPayload) {
+    return request<MedicalRecord>(`/api/records/${id}/prescriptions`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  addExam(id: string, payload: ExamPayload) {
+    return request<MedicalRecord>(`/api/records/${id}/exams`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  updateExamResult(id: string, examId: string, payload: ExamResultPayload) {
+    return request<MedicalRecord>(`/api/records/${id}/exams/${examId}/result`, {
+      method: "PATCH",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  registerAtendimento(id: string, payload: AtendimentoPayload) {
+    return request<MedicalRecord>(`/api/records/${id}/atendimentos`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+
   deleteRecord(id: string) {
     return request<void>(`/api/records/${id}`, {
       method: "DELETE"
@@ -224,19 +287,6 @@ export const api = {
 
   listNotifications() {
     return request<Notification[]>("/api/notifications");
-  },
-
-  broadcastNotification(payload: NotificationPayload) {
-    return request<Notification>("/api/notifications/broadcast", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-  },
-
-  clearNotifications() {
-    return request<void>("/api/notifications", {
-      method: "DELETE"
-    });
   },
 
   checkGateway() {

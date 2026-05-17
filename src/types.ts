@@ -9,7 +9,11 @@ export interface AuthResponse {
   token: string;
   tokenType: string;
   expiresIn: number;
+  refreshToken: string;
+  refreshExpiresIn: number;
+  userId: number;
   username: string;
+  nome: string;
   email: string;
   role: Role;
 }
@@ -22,8 +26,10 @@ export interface BootstrapStatus {
 export interface User {
   id: number;
   username: string;
+  nome: string;
   email: string;
   role: Role;
+  assinaturaDigital?: string;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -31,30 +37,39 @@ export interface User {
 
 export interface CreateUserPayload {
   username: string;
+  nome: string;
   email: string;
   password: string;
   role: Role;
+  assinaturaDigital?: string;
 }
 
 export interface UpdateUserPayload {
   username: string;
+  nome: string;
   email: string;
   password?: string;
   role: Role;
   active: boolean;
+  assinaturaDigital?: string;
 }
 
 export type Sexo = "MASCULINO" | "FEMININO" | "OUTRO";
+
+export type Severidade = "LEVE" | "MODERADA" | "GRAVE";
 
 export interface VaccinePayload {
   id?: number;
   nomeVacina: string;
   dataAplicacao: string;
+  lote?: string;
+  profissionalResp?: string;
 }
 
 export interface AllergyPayload {
   id?: number;
   nomeAlergia: string;
+  severidade: Severidade;
 }
 
 export interface Patient {
@@ -72,6 +87,10 @@ export interface Patient {
   ativo: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface WebSocketSubscription {
+  unsubscribe: () => void;
 }
 
 export interface PatientPayload {
@@ -99,13 +118,14 @@ export type TriageStatus =
 
 export interface TriageEntry {
   id: number;
+  correlationId?: string;
   patientId: number;
   patientName: string;
   riskClassification: RiskClassification;
   chiefComplaint: string;
   vitalSigns: string;
   observations: string;
-  nurseId: string;
+  nurseId: number;
   nurseName: string;
   triageDate?: string;
   status: TriageStatus;
@@ -119,9 +139,9 @@ export interface TriagePayload {
   chiefComplaint: string;
   vitalSigns: string;
   observations: string;
-  nurseId: string;
-  nurseName: string;
   status?: TriageStatus;
+  alergiasReportadas?: AllergyPayload[];
+  vacinasReportadas?: VaccinePayload[];
 }
 
 export interface RecordEntry {
@@ -131,6 +151,95 @@ export interface RecordEntry {
   doctorName: string;
   entryDate?: string;
   origin?: string;
+  correlationId?: string;
+}
+
+export type ViaAdministracao =
+  | "ORAL"
+  | "INTRAVENOSA"
+  | "INTRAMUSCULAR"
+  | "SUBCUTANEA"
+  | "TOPICA"
+  | "INALATORIA"
+  | "OUTRA";
+
+export interface Prescription {
+  id: string;
+  medicamento: string;
+  dosagem: string;
+  via: ViaAdministracao;
+  frequencia: string;
+  duracao: string;
+  observacoes?: string;
+  doctorId?: string;
+  doctorName?: string;
+  prescribedAt?: string;
+  correlationId?: string;
+}
+
+export interface PrescriptionPayload {
+  medicamento: string;
+  dosagem: string;
+  via: ViaAdministracao;
+  frequencia: string;
+  duracao: string;
+  observacoes?: string;
+}
+
+export type TipoExame = "LABORATORIAL" | "IMAGEM" | "CARDIOLOGICO" | "OUTRO";
+
+export type StatusExame = "SOLICITADO" | "EM_ANDAMENTO" | "CONCLUIDO" | "CANCELADO";
+
+export interface Exam {
+  id: string;
+  tipo: TipoExame;
+  nome: string;
+  indicacaoClinica?: string;
+  status: StatusExame;
+  resultado?: string;
+  doctorId?: string;
+  doctorName?: string;
+  requestedAt?: string;
+  resultedAt?: string;
+  correlationId?: string;
+}
+
+export interface ExamPayload {
+  tipo: TipoExame;
+  nome: string;
+  indicacaoClinica?: string;
+}
+
+export interface ExamResultPayload {
+  resultado: string;
+  status?: StatusExame;
+}
+
+export interface AtendimentoConsultationInput {
+  diagnosis: string;
+  treatment: string;
+  observations: string;
+}
+
+export interface AtendimentoPrescriptionInput {
+  medicamento: string;
+  dosagem: string;
+  via: ViaAdministracao;
+  frequencia: string;
+  duracao: string;
+  observacoes?: string;
+}
+
+export interface AtendimentoExamInput {
+  tipo: TipoExame;
+  nome: string;
+  indicacaoClinica?: string;
+}
+
+export interface AtendimentoPayload {
+  consultation: AtendimentoConsultationInput | null;
+  prescriptions: AtendimentoPrescriptionInput[];
+  exams: AtendimentoExamInput[];
 }
 
 export interface MedicalRecord {
@@ -143,6 +252,8 @@ export interface MedicalRecord {
   responsibleDoctorId: string;
   responsibleDoctorName: string;
   entries: RecordEntry[];
+  prescriptions?: Prescription[];
+  exams?: Exam[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -165,14 +276,9 @@ export interface Notification {
   severity: string;
   patientId?: number;
   patientName?: string;
+  triageId?: number;
+  correlationId?: string;
+  targetRoles?: string[];
   timestamp?: string;
 }
 
-export interface NotificationPayload {
-  type: string;
-  title: string;
-  message: string;
-  severity: string;
-  patientId?: number;
-  patientName?: string;
-}

@@ -1,0 +1,11 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--hs-radius-full);
+  background: linear-gradient(135deg, var(--hs-accent), #2563eb);
+  color: #ffffff;
+  font-weight: 800;
+  flex-shrink: 0;
+  user-select: none;
+}

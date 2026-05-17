@@ -1,10 +1,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { Alert } from "../../../components/ui/Alert";
 import { RecordForm } from "../components/RecordForm";
 import { api } from "../../../services/api";
 import type { MedicalRecordPayload, Patient } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
 
 const initialRecordForm: MedicalRecordPayload = {
   patientId: 0,
@@ -29,7 +31,6 @@ export function CreateRecordPage() {
     const loadPatients = async () => {
       setLoading(true);
       setError("");
-
       try {
         const response = await api.listPatients(true);
         setPatients(response);
@@ -39,7 +40,6 @@ export function CreateRecordPage() {
         setLoading(false);
       }
     };
-
     void loadPatients();
   }, []);
 
@@ -50,13 +50,11 @@ export function CreateRecordPage() {
     setSubmitting(true);
     setFeedback("");
     setError("");
-
     try {
       const payload: MedicalRecordPayload = {
         ...form,
         patientName: selectedPatient?.nome || form.patientName
       };
-
       await api.createRecord(payload);
       setFeedback("Prontuário criado com sucesso.");
       setTimeout(() => navigate("/app/prontuarios"), 800);
@@ -68,36 +66,26 @@ export function CreateRecordPage() {
   };
 
   if (loading) {
-    return (
-      <div className="page-stack">
-        <article className="panel">
-          <div className="empty-state">Carregando pacientes...</div>
-        </article>
-      </div>
-    );
+    return <div className={dashboard.loader}>Carregando pacientes…</div>;
   }
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="REGISTRO CLÍNICO"
+        eyebrow="Registro clínico"
         title="Criar prontuário"
         description="Cadastre um novo prontuário eletrônico para o paciente selecionado."
       />
-
-      {feedback ? <div className="alert success">{feedback}</div> : null}
-      {error ? <div className="alert error">{error}</div> : null}
-
-      <article className="panel">
-        <RecordForm
-          form={form}
-          setForm={setForm}
-          patients={patients}
-          submitting={submitting}
-          onSubmit={handleSubmit}
-          onCancel={() => navigate("/app/prontuarios")}
-        />
-      </article>
+      {feedback ? <Alert variant="success">{feedback}</Alert> : null}
+      {error ? <Alert variant="error">{error}</Alert> : null}
+      <RecordForm
+        form={form}
+        setForm={setForm}
+        patients={patients}
+        submitting={submitting}
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/app/prontuarios")}
+      />
     </div>
   );
 }

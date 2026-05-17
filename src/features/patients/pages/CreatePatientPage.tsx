@@ -1,10 +1,13 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { useAuth } from "../../../auth/AuthProvider";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { useToast } from "../../../components/feedback/ToastProvider";
 import { api } from "../../../services/api";
 import type { PatientPayload } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
 import { PatientForm } from "../components/PatientForm";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
 
 const initialForm: PatientPayload = {
   nome: "",
@@ -14,7 +17,7 @@ const initialForm: PatientPayload = {
   telefone: "",
   sexo: "FEMININO",
   endereco: "",
-  tipoSanguineo: "O+",
+  tipoSanguineo: "",
   alergias: [],
   vacinas: [],
   ativo: true
@@ -22,48 +25,54 @@ const initialForm: PatientPayload = {
 
 export function CreatePatientPage() {
   const navigate = useNavigate();
+  const toast = useToast();
+  const { user } = useAuth();
   const [form, setForm] = useState<PatientPayload>(initialForm);
   const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState("");
-  const [error, setError] = useState("");
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitting(true);
-    setFeedback("");
-    setError("");
 
     try {
-      await api.createPatient(form);
-      setFeedback("Paciente cadastrado com sucesso.");
-      setTimeout(() => navigate("/app/pacientes"), 800);
+      const created = await api.createPatient(form);
+      const autoForward = user?.role === "RECEPCIONISTA";
+
+      if (autoForward) {
+        try {
+          await api.forwardPatientToTriage(created.id);
+          toast.success(`${created.nome} cadastrado(a) e encaminhado(a) para triagem.`);
+        } catch (forwardError) {
+          toast.success("Paciente cadastrado.");
+          toast.error(`Falha ao encaminhar para triagem: ${normalizeError(forwardError)}`);
+        }
+      } else {
+        toast.success("Paciente cadastrado com sucesso.");
+      }
+
+      navigate("/app/pacientes");
     } catch (submitError) {
-      setError(normalizeError(submitError));
+      toast.error(normalizeError(submitError));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="CADASTRO CLÍNICO"
+        eyebrow="Cadastro administrativo"
         title="Cadastrar paciente"
-        description="Crie um novo cadastro com informações administrativas e clínicas iniciais."
+        description="Crie o cadastro inicial do paciente. As informações clínicas são preenchidas depois, na triagem."
       />
-
-      {feedback ? <div className="alert success">{feedback}</div> : null}
-      {error ? <div className="alert error">{error}</div> : null}
-
-      <article className="panel">
-        <PatientForm
-          form={form}
-          setForm={setForm}
-          submitting={submitting}
-          onSubmit={handleSubmit}
-          onCancel={() => navigate("/app/pacientes")}
-        />
-      </article>
+      <PatientForm
+        form={form}
+        setForm={setForm}
+        submitting={submitting}
+        showClinicalSection={false}
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/app/pacientes")}
+      />
     </div>
   );
 }

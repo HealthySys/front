@@ -1,10 +1,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { Alert } from "../../../components/ui/Alert";
 import { api } from "../../../services/api";
 import type { Patient, PatientPayload } from "../../../types";
 import { normalizeError } from "../../../utils/formatters";
 import { PatientForm } from "../components/PatientForm";
+import dashboard from "../../../pages/dashboards/Dashboard.module.css";
 
 const initialForm: PatientPayload = {
   nome: "",
@@ -14,7 +16,7 @@ const initialForm: PatientPayload = {
   telefone: "",
   sexo: "FEMININO",
   endereco: "",
-  tipoSanguineo: "O+",
+  tipoSanguineo: "",
   alergias: [],
   vacinas: [],
   ativo: true
@@ -84,36 +86,26 @@ export function EditPatientPage() {
   };
 
   if (loading) {
-    return (
-      <div className="page-stack">
-        <article className="panel">
-          <div className="empty-state">Carregando paciente...</div>
-        </article>
-      </div>
-    );
+    return <div className={dashboard.loader}>Carregando paciente…</div>;
   }
 
   return (
-    <div className="page-stack">
+    <div className={dashboard.stack}>
       <PageHeader
-        eyebrow="CADASTRO CLÍNICO"
+        eyebrow="Cadastro clínico"
         title="Editar paciente"
         description="Atualize as informações cadastrais e clínicas do paciente."
       />
-
-      {feedback ? <div className="alert success">{feedback}</div> : null}
-      {error ? <div className="alert error">{error}</div> : null}
-
-      <article className="panel">
-        <PatientForm
-          form={form}
-          setForm={setForm}
-          submitting={submitting}
-          isEditing
-          onSubmit={handleSubmit}
-          onCancel={() => navigate("/app/pacientes")}
-        />
-      </article>
+      {feedback ? <Alert variant="success">{feedback}</Alert> : null}
+      {error ? <Alert variant="error">{error}</Alert> : null}
+      <PatientForm
+        form={form}
+        setForm={setForm}
+        submitting={submitting}
+        isEditing
+        onSubmit={handleSubmit}
+        onCancel={() => navigate("/app/pacientes")}
+      />
     </div>
   );
 }
