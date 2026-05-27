@@ -18,8 +18,7 @@ const matchers: Array<{ test: RegExp; meta: RouteMeta }> = [
   { test: /^\/app\/prontuarios\/novo/,           meta: { eyebrow: "Operação",       title: "Novo prontuário" } },
   { test: /^\/app\/prontuarios\/[^/]+\/editar/,  meta: { eyebrow: "Operação",       title: "Editar prontuário" } },
   { test: /^\/app\/prontuarios\/[^/]+/,          meta: { eyebrow: "Operação",       title: "Prontuário" } },
-  { test: /^\/app\/prontuarios/,                 meta: { eyebrow: "Operação",       title: "Prontuários" } },
-  { test: /^\/app\/meu-prontuario/,              meta: { eyebrow: "Meu prontuário", title: "Histórico de saúde" } }
+  { test: /^\/app\/prontuarios/,                 meta: { eyebrow: "Operação",       title: "Prontuários" } }
 ];
 
 export function getRouteMeta(pathname: string): RouteMeta {

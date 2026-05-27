@@ -13,8 +13,7 @@ export type ModuleKey =
   | "usuarios"
   | "pacientes"
   | "triagem"
-  | "prontuarios"
-  | "meu-prontuario";
+  | "prontuarios";
 
 export interface ModuleDefinition {
   key: ModuleKey;
@@ -27,8 +26,7 @@ export const roleLabels: Record<Role, string> = {
   ADMIN: "Administrador do sistema",
   MEDICO: "Médico",
   ENFERMEIRO: "Enfermeiro",
-  RECEPCIONISTA: "Recepcionista",
-  PACIENTE: "Paciente"
+  RECEPCIONISTA: "Recepcionista"
 };
 
 export const modules: ModuleDefinition[] = [
@@ -61,12 +59,6 @@ export const modules: ModuleDefinition[] = [
     label: "Prontuários",
     path: "/app/prontuarios",
     icon: FileText,
-  },
-  {
-    key: "meu-prontuario",
-    label: "Meu prontuário",
-    path: "/app/meu-prontuario",
-    icon: FileText,
   }
 ];
 
@@ -74,16 +66,14 @@ const permissionMatrix: Record<Role, ModuleKey[]> = {
   ADMIN: ["dashboard", "usuarios"],
   MEDICO: ["dashboard", "triagem", "prontuarios"],
   ENFERMEIRO: ["dashboard", "pacientes", "triagem"],
-  RECEPCIONISTA: ["pacientes"],
-  PACIENTE: ["meu-prontuario"]
+  RECEPCIONISTA: ["pacientes"]
 };
 
 const writeMatrix: Record<Role, ModuleKey[]> = {
   ADMIN: ["usuarios"],
   MEDICO: ["prontuarios"],
   ENFERMEIRO: ["triagem"],
-  RECEPCIONISTA: ["pacientes"],
-  PACIENTE: []
+  RECEPCIONISTA: ["pacientes"]
 };
 
 export function canAccess(role: Role | undefined, moduleKey: ModuleKey) {
@@ -105,10 +95,6 @@ export function canWrite(role: Role | undefined, moduleKey: ModuleKey) {
 export function initialRouteForRole(role: Role | undefined) {
   if (!role) {
     return "/login";
-  }
-
-  if (role === "PACIENTE") {
-    return "/app/meu-prontuario";
   }
 
   const firstAvailable = modules.find((module) => canAccess(role, module.key));

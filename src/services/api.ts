@@ -135,10 +135,6 @@ export const api = {
     return request<Patient[]>(`/api/patients${suffix}`);
   },
 
-  getCurrentPatient() {
-    return request<Patient>("/api/patients/me");
-  },
-
   getPatient(id: number) {
     return request<Patient>(`/api/patients/${id}`);
   },
@@ -212,10 +208,6 @@ export const api = {
   listRecords(patientId?: number | string) {
     const suffix = patientId !== undefined ? `?patientId=${encodeURIComponent(String(patientId))}` : "";
     return request<MedicalRecord[]>(`/api/records${suffix}`);
-  },
-
-  getMyRecord(patientId: number | string) {
-    return request<MedicalRecord[]>(`/api/records?patientId=${encodeURIComponent(String(patientId))}`);
   },
 
   createRecord(payload: MedicalRecordPayload) {
