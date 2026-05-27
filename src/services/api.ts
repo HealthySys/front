@@ -130,12 +130,6 @@ export const api = {
     });
   },
 
-  deleteUser(id: number) {
-    return request<void>(`/api/users/${id}`, {
-      method: "DELETE"
-    });
-  },
-
   listPatients(active?: boolean) {
     const suffix = typeof active === "boolean" ? `?ativo=${active}` : "";
     return request<Patient[]>(`/api/patients${suffix}`);
@@ -209,12 +203,6 @@ export const api = {
     });
   },
 
-  deleteTriage(id: number) {
-    return request<void>(`/api/triage/${id}`, {
-      method: "DELETE"
-    });
-  },
-
   forwardPatientToTriage(patientId: number) {
     return request<void>(`/api/triage/encaminhar/${patientId}`, {
       method: "POST"
@@ -276,12 +264,6 @@ export const api = {
     return request<MedicalRecord>(`/api/records/${id}/atendimentos`, {
       method: "POST",
       body: JSON.stringify(payload)
-    });
-  },
-
-  deleteRecord(id: string) {
-    return request<void>(`/api/records/${id}`, {
-      method: "DELETE"
     });
   },
 
