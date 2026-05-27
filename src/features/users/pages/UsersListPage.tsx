@@ -36,16 +36,6 @@ export function UsersListPage() {
     void loadUsers();
   }, []);
 
-  const handleDelete = async (user: User) => {
-    if (!window.confirm(`Deseja remover o usuário ${user.username}?`)) return;
-    try {
-      await api.deleteUser(user.id);
-      await loadUsers();
-    } catch (deleteError) {
-      setError(normalizeError(deleteError));
-    }
-  };
-
   const totalActive = users.filter((u) => u.active).length;
   const admins = users.filter((u) => u.role === "ADMIN").length;
   const assistance = users.filter((u) => u.role === "MEDICO" || u.role === "ENFERMEIRO").length;
@@ -146,9 +136,6 @@ export function UsersListPage() {
                           onClick={() => navigate(`/app/usuarios/${user.id}/editar`)}
                         >
                           Editar
-                        </Button>
-                        <Button variant="danger" size="sm" onClick={() => void handleDelete(user)}>
-                          Excluir
                         </Button>
                       </div>
                     </td>

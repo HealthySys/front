@@ -48,16 +48,6 @@ export function RecordsListPage() {
     void loadRecords();
   }, []);
 
-  const handleDelete = async (record: MedicalRecord) => {
-    if (!window.confirm(`Deseja excluir o prontuário de ${record.patientName}?`)) return;
-    try {
-      await api.deleteRecord(record.id);
-      await loadRecords();
-    } catch (deleteError) {
-      setError(normalizeError(deleteError));
-    }
-  };
-
   const filteredRecords = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return records;
@@ -69,10 +59,12 @@ export function RecordsListPage() {
     );
   }, [records, searchTerm]);
 
-  const totalFinalizados = records.filter((r) => Boolean(r.diagnosis?.trim())).length;
+  const hasFinalizedEntry = (r: MedicalRecord) =>
+    Boolean(r.diagnosis?.trim()) || (r.entries ?? []).some((entry) => entry.type === "CONSULTA");
+  const totalFinalizados = records.filter(hasFinalizedEntry).length;
   const totalEmAndamento = records.length - totalFinalizados;
   const finalizadosHoje = records.filter(
-    (r) => Boolean(r.diagnosis?.trim()) && isToday(r.updatedAt || r.createdAt)
+    (r) => hasFinalizedEntry(r) && isToday(r.updatedAt || r.createdAt)
   ).length;
 
   return (
@@ -140,7 +132,6 @@ export function RecordsListPage() {
           records={filteredRecords}
           onView={(record) => navigate(`/app/prontuarios/${record.id}`)}
           onEdit={(record) => navigate(`/app/prontuarios/${record.id}/editar`)}
-          onDelete={(record) => void handleDelete(record)}
         />
       ) : (
         <div className={dashboard.empty}>Nenhum prontuário encontrado com os filtros atuais.</div>

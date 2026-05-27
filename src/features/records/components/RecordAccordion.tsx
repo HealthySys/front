@@ -10,16 +10,14 @@ interface RecordAccordionProps {
   records: MedicalRecord[];
   onView: (record: MedicalRecord) => void;
   onEdit: (record: MedicalRecord) => void;
-  onDelete: (record: MedicalRecord) => void;
 }
 
 function isFinalized(record: MedicalRecord): boolean {
-  // Heurística: se tem entradas com diagnóstico fechado, considera finalizado.
-  // Senão, em andamento.
-  return Boolean(record.diagnosis && record.diagnosis.trim().length > 0);
+  if (record.diagnosis && record.diagnosis.trim().length > 0) return true;
+  return (record.entries ?? []).some((entry) => entry.type === "CONSULTA");
 }
 
-export function RecordAccordion({ records, onView, onEdit, onDelete }: RecordAccordionProps) {
+export function RecordAccordion({ records, onView, onEdit }: RecordAccordionProps) {
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
@@ -84,9 +82,6 @@ export function RecordAccordion({ records, onView, onEdit, onDelete }: RecordAcc
                   </Button>
                   <Button variant="secondary" size="sm" onClick={() => onEdit(record)}>
                     Editar
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={() => onDelete(record)}>
-                    Excluir
                   </Button>
                 </div>
               </div>

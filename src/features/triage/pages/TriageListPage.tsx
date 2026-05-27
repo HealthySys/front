@@ -84,16 +84,6 @@ export function TriageListPage() {
     }
   };
 
-  const handleDelete = async (entry: TriageEntry) => {
-    if (!window.confirm(`Deseja remover a triagem de ${entry.patientName}?`)) return;
-    try {
-      await api.deleteTriage(entry.id);
-      await loadTriage();
-    } catch (deleteError) {
-      setError(normalizeError(deleteError));
-    }
-  };
-
   const filteredEntries = entries.filter((entry) => {
     const matchesSearch =
       !deferredSearch ||
@@ -279,9 +269,6 @@ export function TriageListPage() {
                               onClick={() => navigate(`/app/triagem/${entry.id}/editar`)}
                             >
                               Editar
-                            </Button>
-                            <Button variant="danger" size="sm" onClick={() => void handleDelete(entry)}>
-                              Excluir
                             </Button>
                           </div>
                         ) : null}

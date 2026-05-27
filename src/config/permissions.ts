@@ -71,7 +71,7 @@ export const modules: ModuleDefinition[] = [
 ];
 
 const permissionMatrix: Record<Role, ModuleKey[]> = {
-  ADMIN: ["dashboard", "usuarios", "pacientes", "triagem", "prontuarios"],
+  ADMIN: ["dashboard", "usuarios"],
   MEDICO: ["dashboard", "triagem", "prontuarios"],
   ENFERMEIRO: ["dashboard", "pacientes", "triagem"],
   RECEPCIONISTA: ["pacientes"],
@@ -79,7 +79,7 @@ const permissionMatrix: Record<Role, ModuleKey[]> = {
 };
 
 const writeMatrix: Record<Role, ModuleKey[]> = {
-  ADMIN: ["usuarios", "pacientes", "triagem", "prontuarios"],
+  ADMIN: ["usuarios"],
   MEDICO: ["prontuarios"],
   ENFERMEIRO: ["triagem"],
   RECEPCIONISTA: ["pacientes"],
