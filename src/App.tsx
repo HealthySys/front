@@ -17,7 +17,6 @@ import { RecordsListPage } from "./features/records/pages/RecordsListPage";
 import { CreateRecordPage } from "./features/records/pages/CreateRecordPage";
 import { EditRecordPage } from "./features/records/pages/EditRecordPage";
 import { RecordDetailsPage } from "./features/records/pages/RecordDetailsPage";
-import { MyRecordPage } from "./features/records/pages/MyRecordPage";
 import { UsersListPage } from "./features/users/pages/UsersListPage";
 import { CreateUserPage } from "./features/users/pages/CreateUserPage";
 import { EditUserPage } from "./features/users/pages/EditUserPage";
@@ -175,14 +174,6 @@ export default function App() {
             element={
               <RoleRoute moduleKey="prontuarios" requireWrite>
                 <EditRecordPage />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="meu-prontuario"
-            element={
-              <RoleRoute moduleKey="meu-prontuario">
-                <MyRecordPage />
               </RoleRoute>
             }
           />

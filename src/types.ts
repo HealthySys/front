@@ -1,4 +1,4 @@
-export type Role = "ADMIN" | "MEDICO" | "ENFERMEIRO" | "RECEPCIONISTA" | "PACIENTE";
+export type Role = "ADMIN" | "MEDICO" | "ENFERMEIRO" | "RECEPCIONISTA";
 
 export interface LoginPayload {
   username: string;

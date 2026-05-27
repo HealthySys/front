@@ -1,7 +1,7 @@
 import type { RiskClassification, Role, Sexo, TriageStatus } from "../types";
 import { roleLabels } from "../config/permissions";
 
-export const roleOptions: Role[] = ["ADMIN", "MEDICO", "ENFERMEIRO", "RECEPCIONISTA", "PACIENTE"];
+export const roleOptions: Role[] = ["ADMIN", "MEDICO", "ENFERMEIRO", "RECEPCIONISTA"];
 export const sexoOptions: Sexo[] = ["FEMININO", "MASCULINO", "OUTRO"];
 export const bloodTypeOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 export const riskOptions: RiskClassification[] = ["VERMELHO", "LARANJA", "AMARELO", "VERDE", "AZUL"];
