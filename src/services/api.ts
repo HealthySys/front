@@ -5,6 +5,7 @@ import type {
   CreateUserPayload,
   ExamPayload,
   ExamResultPayload,
+  LoadTestState,
   LoginPayload,
   MedicalRecord,
   MedicalRecordPayload,
@@ -261,6 +262,16 @@ export const api = {
 
   listNotifications() {
     return request<Notification[]>("/api/notifications");
+  },
+
+  startLoadTest() {
+    return request<LoadTestState>("/api/users/load-test", {
+      method: "POST"
+    });
+  },
+
+  getLoadTestStatus() {
+    return request<LoadTestState>("/api/users/load-test");
   },
 
   checkGateway() {

@@ -268,6 +268,36 @@ export interface MedicalRecordPayload {
   responsibleDoctorName: string;
 }
 
+export type LoadTestStatus = "IDLE" | "RUNNING" | "COMPLETED" | "FAILED";
+
+export interface LoadTestSummary {
+  reqRate: number | null;
+  reqCount: number | null;
+  durationP95: number | null;
+  durationAvg: number | null;
+  durationMax: number | null;
+  errorRate: number | null;
+  loginP95: number | null;
+  checksRate: number | null;
+  iterations: number | null;
+  vusMax: number | null;
+  thresholds: {
+    httpReqDuration: boolean | null;
+    httpReqFailed: boolean | null;
+    loginDuration: boolean | null;
+  };
+  passed: boolean | null;
+}
+
+export interface LoadTestState {
+  status: LoadTestStatus;
+  jobName: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  summary: LoadTestSummary | null;
+  message: string | null;
+}
+
 export interface Notification {
   id: string;
   type: string;
