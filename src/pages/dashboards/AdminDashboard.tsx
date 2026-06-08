@@ -50,7 +50,6 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
     };
   }, [toast]);
 
-  // Enquanto o teste roda, atualiza o status a cada 3s ate terminar.
   useEffect(() => {
     if (loadTest?.status !== "RUNNING") return;
 
@@ -59,7 +58,6 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
         const next = await api.getLoadTestStatus();
         setLoadTest(next);
       } catch {
-        // erro transitorio de polling — ignora e tenta de novo no proximo tick
       }
     }, 3000);
 
@@ -116,7 +114,12 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
               <Play size={15} style={{ marginRight: 6 }} />
               {running ? "Em andamento…" : starting ? "Iniciando…" : "Disparar teste"}
             </Button>
-            <Button variant="secondary" onClick={() => window.open("/grafana", "_blank")}>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                window.open(`${window.location.protocol}//${window.location.hostname}:30030`, "_blank")
+              }
+            >
               <ExternalLink size={15} style={{ marginRight: 6 }} />
               Abrir Grafana
             </Button>
